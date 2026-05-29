@@ -14,13 +14,14 @@
         tr:hover { background-color: #f9f9f9; }
         .badge-consumo { background-color: #2ecc71; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 0.9em; }
         .sin-datos { color: #95a5a6; font-style: italic; }
+        .badge-error { background-color: #e74c3c; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 0.9em; }
         select { padding: 8px 12px; border-radius: 4px; border: 1px solid #bdc3c7; font-size: 1rem; margin-bottom: 15px; cursor: pointer; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Control de Consumo e Impresión</h1>
-        <div class="sub" id="actualizacion">Cargando datos del sistema...</div>
+        <div class="sub" id="actualizacion">Cargando datos desde GitHub...</div>
         
         <label for="selector-mes"><strong>Seleccionar Mes a Analizar: </strong></label>
         <select id="selector-mes" onchange="renderizarTabla()"></select>
@@ -35,24 +36,41 @@
                     <th>Hojas Gastadas en el Mes</th>
                 </tr>
             </thead>
-            <tbody id="tabla-cuerpo"></tbody>
+            <tbody id="tabla-cuerpo">
+                <tr>
+                    <td colspan="5" style="text-align: center; color: #7f8c8d;">Buscando registros...</td>
+                </tr>
+            </tbody>
         </table>
     </div>
 
     <script>
         let datosHistorial = {};
 
-        // 1. Cargar el JSON dinámico
-        fetch('historial_impresoras.json')
-            .then(response => response.json())
+        // === CONFIGURACIÓN DE RUTAS MÓVILES (CAMBIA ESTO) ===
+        const GITHUB_USER = "LautyMel";
+        const GITHUB_REPO = "Impresoras";
+        const urlJson = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/historial_impresoras.json`;
+
+        // 1. Cargar el JSON dinámico saltando la caché del navegador
+        fetch(`${urlJson}?t=${new Date().getTime()}`)
+            .then(response => {
+                if (!response.ok) throw new Error("No se pudo obtener el JSON");
+                return response.json();
+            })
             .then(data => {
                 datosHistorial = data;
                 
                 // Obtener meses ordenados de más reciente a más antiguo
                 const meses = Object.keys(data).sort().reverse();
-                if (meses.length === 0) return;
+                if (meses.length === 0) {
+                    document.getElementById('actualizacion').innerText = "El archivo de historial está vacío.";
+                    return;
+                }
 
                 const selector = document.getElementById('selector-mes');
+                selector.innerHTML = ""; // Limpiar contenido previo
+
                 meses.forEach(mes => {
                     const opt = document.createElement('option');
                     opt.value = mes;
@@ -60,17 +78,24 @@
                     selector.appendChild(opt);
                 });
 
+                // Forzar la primera renderización con el mes más nuevo
                 renderizarTabla();
             })
             .catch(err => {
-                document.getElementById('actualizacion').innerText = "Error: Asegúrate de que el script automático ya haya corrido al menos una vez.";
+                console.error(err);
+                document.getElementById('actualizacion').innerHTML = "<span style='color: #e74c3c; font-weight: bold;'>Error: No se pudo conectar con los datos de GitHub. Revisa el usuario y repositorio en la línea 44.</span>";
             });
 
         // 2. Función para calcular diferencias y construir la interfaz
         function renderizarTabla() {
-            const mesSeleccionado = document.getElementById('selector-mes').value;
+            const selector = document.getElementById('selector-mes');
+            if (!selector || !selector.value) return;
+
+            const mesSeleccionado = selector.value;
             const cuerpo = document.getElementById('tabla-cuerpo');
             cuerpo.innerHTML = ""; 
+
+            if (!datosHistorial[mesSeleccionado]) return;
 
             document.getElementById('actualizacion').innerText = `Última lectura de este mes: ${datosHistorial[mesSeleccionado].ultima_actualizacion}`;
 
@@ -87,20 +112,33 @@
                     if (metrica === 'ip') continue;
 
                     let celdaDiferencia = `<span class="sin-datos">Esperando al próximo mes...</span>`;
+                    let contadorMostrar = "";
 
-                    // Si hay registro del mes anterior, calculamos la resta de hojas gastadas
-                    if (datosAnteriores && datosAnteriores[nombreImp] && datosAnteriores[nombreImp][metrica]) {
-                        const valorAnterior = datosAnteriores[nombreImp][metrica];
-                        const diferencia = valorContador - valorAnterior;
-                        celdaDiferencia = `<span class="badge-consumo">+ ${diferencia.toLocaleString()} hojas</span>`;
+                    // Validación si la impresora arrojó un ERROR en el escaneo actual
+                    if (valorContador === "ERROR" || valorContador === undefined) {
+                        contadorMostrar = `<span class="badge-error">OFFLINE</span>`;
+                        celdaDiferencia = `<span class="sin-datos">—</span>`;
+                    } else {
+                        contadorMostrar = Number(valorContador).toLocaleString();
+
+                        // Si hay registro del mes anterior válido, calculamos la resta de hojas gastadas
+                        if (datosAnteriores && datosAnteriores[nombreImp] && datosAnteriores[nombreImp][metrica]) {
+                            const valorAnterior = datosAnteriores[nombreImp][metrica];
+                            
+                            // Asegurarnos de que el valor anterior tampoco haya sido un error
+                            if (valorAnterior !== "ERROR" && valorAnterior !== undefined) {
+                                const diferencia = Number(valorContador) - Number(valorAnterior);
+                                celdaDiferencia = `<span class="badge-consumo">+ ${diferencia.toLocaleString()} hojas</span>`;
+                            }
+                        }
                     }
 
                     cuerpo.innerHTML += `
                         <tr>
                             <td><strong>${nombreImp}</strong></td>
-                            <td>${info.ip}</td>
+                            <td>${info.ip || 'Sin IP'}</td>
                             <td>${metrica}</td>
-                            <td>${valorContador.toLocaleString()}</td>
+                            <td>${contadorMostrar}</td>
                             <td>${celdaDiferencia}</td>
                         </tr>`;
                 }
