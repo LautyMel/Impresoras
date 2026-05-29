@@ -10,7 +10,7 @@ from github import Github  # Librería PyGithub
 CARPETA_PROYECTO = r"C:\Users\20453243215\Desktop\pp\impresora"
 
 # Configuración del Repositorio de GitHub
-GITHUB_REPO = "tu_usuario/tu_repositorio"       # REEMPLAZA: "tu_usuario/nombre-repo"
+GITHUB_REPO = "LautyMel/Impresoras"       # REEMPLAZA: "tu_usuario/nombre-repo"
 GITHUB_FILE_PATH = "historial_impresoras.json" # Nombre del archivo en la nube
 
 # Tiempo de espera entre escaneos (600 segundos = 10 minutos)
