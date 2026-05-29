@@ -132,6 +132,9 @@ def ejecutar_escaneo():
     fecha_str = ahora.strftime("%Y-%m-%d %H:%M:%S")
     mes_clave = ahora.strftime("%Y-%m")
 
+    # Archivo local de historial
+    archivo_datos_local = os.path.join(CARPETA_PROYECTO, "historial_impresoras.json")
+
     if os.path.exists(archivo_datos_local):
         with open(archivo_datos_local, "r", encoding="utf-8") as f:
             try:
@@ -140,6 +143,7 @@ def ejecutar_escaneo():
                 historial = {}
     else:
         historial = {}
+
 
     if mes_clave not in historial:
         historial[mes_clave] = {"ultima_actualizacion": fecha_str, "datos": {}}
