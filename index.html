@@ -119,7 +119,8 @@
                     } else {
                         // LÓGICA DE VISUALIZACIÓN SEGÚN LA MÉTRICA PROCESADA
                         if (metrica === "Porcentaje Tóner Negro") {
-                            contadorMostrar = valorContador; // Muestra directamente el formato de texto "XX%" o "OK"
+                            // El toner ya viene como "XX%" o "OK" (o "ERROR" si no hay lectura)
+                            contadorMostrar = valorContador;
                             celdaDiferencia = `<span class="badge-toner">Lectura Directa</span>`;
                         } else if (metrica === "Contador General") {
                             contadorMostrar = Number(valorContador).toLocaleString();
