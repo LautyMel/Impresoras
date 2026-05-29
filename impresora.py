@@ -38,36 +38,68 @@ IMPRESORAS = {
     "Impresora 9": "10.25.5.21"
 }
 
-# OIDs fijos para las consultas individuales
-OIDS_A_PROBAR = {
-    "Contador General": "1.3.6.1.2.1.43.10.2.1.4.1.1",
-    "Nivel de Tóner": "1.3.6.1.2.1.43.11.1.1.9.1.1"  # <--- CORREGIDO: Se quitó el espacio y se agregó el índice .1.1 al final
-}
-
-
-archivo_datos_local = os.path.join(CARPETA_PROYECTO, "historial_impresoras.json")
-
-def consultar_oid_ps(printer, oid):
-    try:
-        clean_oid = oid.lstrip('.')
-        ps_command = f"""
-        $sys = New-Object -ComObject OlePrn.OleSNMP
+def consultar_impresora_avanzado(printer):
+    """
+    Ejecuta un script de PowerShell optimizado que extrae el contador general
+    y calcula de forma inteligente el porcentaje del tóner negro analizando los índices.
+    """
+    ps_command = f"""
+    $sys = New-Object -ComObject OlePrn.OleSNMP
+    try {{
         $sys.Open("{printer}", "public", 2, 161)
-        $sys.Get(".{clean_oid}")
-        """
+        
+        # 1. Obtener Contador
+        try {{ $contador = $sys.Get(".1.3.6.1.2.1.43.10.2.1.4.1.1") }} catch {{ $contador = "ERROR" }}
+        
+        # 2. Buscar índice del Tóner Negro (revisando los primeros 6 índices de descripción)
+        $idxToner = 1
+        for ($i = 1; $i -le 6; $i++) {{
+            try {{
+                $desc = $sys.Get(".1.3.6.1.2.1.43.11.1.1.6.1.$i").ToLower()
+                if ($desc -like "*black*" -or $desc -like "*negro*") {{
+                    $idxToner = $i
+                    break
+                }}
+            }} catch {{}}
+        }}
+
+        # 3. Obtener niveles con el índice detectado
+        try {{ $actual = [int]$sys.Get(".1.3.6.1.2.1.43.11.1.1.9.1.$idxToner") }} catch {{ $actual = -1 }}
+        try {{ $maximo = [int]$sys.Get(".1.3.6.1.2.1.43.11.1.1.8.1.$idxToner") }} catch {{ $maximo = -1 }}
+
+        # 4. Calcular porcentaje real
+        if ($actual -gt 0 -and $maximo -gt 0) {{
+            $porcentaje = [Math]::Round(($actual / $maximo) * 100)
+            $tonerResultado = "$porcentaje%"
+        }} elseif ($actual -eq -3) {{
+            $tonerResultado = "OK"
+        }} else {{
+            $tonerResultado = "ERROR"
+        }}
+    }} catch {{
+        $contador = "ERROR"
+        $tonerResultado = "ERROR"
+    }}
+    
+    # Devolver formato limpio para procesar en Python
+    Write-Output "$contador|$tonerResultado"
+    """
+    try:
         result = subprocess.run(
             ["powershell", "-Command", ps_command],
             stdout=subprocess.PIPE, 
             stderr=subprocess.PIPE, 
             text=True, 
-            timeout=4,
+            timeout=6,
             creationflags=0x08000000  
         )
         if result.returncode == 0 and result.stdout.strip():
-            return result.stdout.strip()
-        return "ERROR"
+            partes = result.stdout.strip().split('|')
+            if len(partes) == 2:
+                return partes[0], partes[1]
+        return "ERROR", "ERROR"
     except:
-        return "ERROR"
+        return "ERROR", "ERROR"
 
 def subir_a_github(contenido_json):
     if not GITHUB_TOKEN:
@@ -80,7 +112,7 @@ def subir_a_github(contenido_json):
             contents = repo.get_contents(GITHUB_FILE_PATH)
             repo.update_file(
                 path=GITHUB_FILE_PATH,
-                message="Actualización automática de contadores y tóner [Script Local]",
+                message="Actualización inteligente de contadores y porcentaje de tóner",
                 content=contenido_json,
                 sha=contents.sha
             )
@@ -115,32 +147,21 @@ def ejecutar_escaneo():
     historial[mes_clave]["ultima_actualizacion"] = fecha_str
 
     for nombre_imp, ip_imp in IMPRESORAS.items():
+        print(f"Escaneando {nombre_imp} ({ip_imp})...")
         if nombre_imp not in historial[mes_clave]["datos"]:
             historial[mes_clave]["datos"][nombre_imp] = {"ip": ip_imp}
             
-        # 1. Consultar Contador General
-        res_contador = consultar_oid_ps(ip_imp, OID_CONTADOR)
-        if res_contador.isdigit():
-            historial[mes_clave]["datos"][nombre_imp]["Contador General"] = int(res_contador)
+        # Llamada única y veloz por impresora para obtener ambas métricas
+        contador, toner = consultar_impresora_avanzado(ip_imp)
+        
+        # Guardar Contador
+        if contador.isdigit():
+            historial[mes_clave]["datos"][nombre_imp]["Contador General"] = int(contador)
         else:
             historial[mes_clave]["datos"][nombre_imp]["Contador General"] = "ERROR"
-
-        # 2. Consultar y calcular Porcentaje de Tóner Negro
-        res_actual = consultar_oid_ps(ip_imp, OID_TONER_ACTUAL)
-        res_maximo = consultar_oid_ps(ip_imp, OID_TONER_MAXIMO)
-
-        if res_actual.isdigit() and res_maximo.isdigit():
-            val_actual = int(res_actual)
-            val_maximo = int(res_maximo)
             
-            if val_maximo > 0:
-                # Calcula el porcentaje entero aproximado
-                porcentaje_toner = round((val_actual / val_maximo) * 100)
-                historial[mes_clave]["datos"][nombre_imp]["Porcentaje Tóner Negro"] = f"{porcentaje_toner}%"
-            else:
-                historial[mes_clave]["datos"][nombre_imp]["Porcentaje Tóner Negro"] = "ERROR_CAPACIDAD"
-        else:
-            historial[mes_clave]["datos"][nombre_imp]["Porcentaje Tóner Negro"] = "ERROR"
+        # Guardar Tóner (Guarda directamente "XX%" o "ERROR")
+        historial[mes_clave]["datos"][nombre_imp]["Porcentaje Tóner Negro"] = toner
 
     json_final = json.dumps(historial, indent=4, ensure_ascii=False)
 
@@ -154,7 +175,7 @@ if __name__ == "__main__":
     if not os.path.exists(CARPETA_PROYECTO):
         os.makedirs(CARPETA_PROYECTO)
 
-    print("Monitor de impresoras iniciado con protección de credenciales...")
+    print("Monitor inteligente de impresoras iniciado...")
     
     while True:
         ejecutar_escaneo()
