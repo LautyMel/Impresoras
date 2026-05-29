@@ -40,7 +40,7 @@ IMPRESORAS = {
 
 OIDS_A_PROBAR = {
     "Contador General": "1.3.6.1.2.1.43.10.2.1.4.1.1",
-    "Nivel de Tóner": "1.3.6.1.2.1.43.11.1.1.9.1" # <--- NUEVO OID AGREGADO
+    "Nivel de Tóner": "1.3.6.1.2.1.43.11.1.1.9 " # <--- NUEVO OID AGREGADO
 }
 
 archivo_datos_local = os.path.join(CARPETA_PROYECTO, "historial_impresoras.json")
