@@ -112,7 +112,7 @@ def subir_a_github(contenido_json):
             contents = repo.get_contents(GITHUB_FILE_PATH)
             repo.update_file(
                 path=GITHUB_FILE_PATH,
-                message="Actualización inteligente de contadores y porcentaje de tóner",
+                message="Actualización automática de registros de impresoras",
                 content=contenido_json,
                 sha=contents.sha
             )
@@ -144,7 +144,7 @@ def ejecutar_escaneo():
     else:
         historial = {}
 
-
+    # Si cambia el mes, crea automáticamente la nueva sección conservando las anteriores
     if mes_clave not in historial:
         historial[mes_clave] = {"ultima_actualizacion": fecha_str, "datos": {}}
 
@@ -152,10 +152,14 @@ def ejecutar_escaneo():
 
     for nombre_imp, ip_imp in IMPRESORAS.items():
         print(f"Escaneando {nombre_imp} ({ip_imp})...")
+        
+        # Aseguramos que la estructura interna mantenga la IP actualizada
         if nombre_imp not in historial[mes_clave]["datos"]:
-            historial[mes_clave]["datos"][nombre_imp] = {"ip": ip_imp}
+            historial[mes_clave]["datos"][nombre_imp] = {}
+        
+        historial[mes_clave]["datos"][nombre_imp]["ip"] = ip_imp
             
-        # Llamada única y veloz por impresora para obtener ambas métricas
+        # Llamada por red via SNMP
         contador, toner = consultar_impresora_avanzado(ip_imp)
         
         # Guardar Contador
@@ -164,7 +168,7 @@ def ejecutar_escaneo():
         else:
             historial[mes_clave]["datos"][nombre_imp]["Contador General"] = "ERROR"
             
-        # Guardar Tóner (Guarda directamente "XX%" o "ERROR")
+        # Guardar Tóner
         historial[mes_clave]["datos"][nombre_imp]["Porcentaje Tóner Negro"] = toner
 
     json_final = json.dumps(historial, indent=4, ensure_ascii=False)
