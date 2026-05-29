@@ -1,10 +1,10 @@
 {
     "2026-05": {
-        "ultima_actualizacion": "2026-05-29 14:01:33",
+        "ultima_actualizacion": "2026-05-29 14:04:02",
         "datos": {
             "Impresora 2": {
                 "ip": "10.25.5.20",
-                "Contador General": 1288
+                "Contador General": 1290
             },
             "Impresora 3": {
                 "ip": "10.25.5.22",
