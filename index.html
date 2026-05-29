@@ -112,17 +112,17 @@
                     let celdaDiferencia = `<span class="sin-datos">Esperando datos...</span>`;
                     let contadorMostrar = "";
 
-                    if (valorContador === "ERROR" || valorContador === undefined) {
+                    // Control de errores de red o lecturas SNMP fallidas
+                    if (valorContador === "ERROR" || valorContador === "ERROR_CAPACIDAD" || valorContador === undefined) {
                         contadorMostrar = `<span class="badge-error">OFFLINE</span>`;
                         celdaDiferencia = `<span class="sin-datos">—</span>`;
                     } else {
-                        contadorMostrar = Number(valorContador).toLocaleString();
-
-                        // LÓGICA PASADA SEGÚN LA MÉTRICA
-                        if (metrica === "Nivel de Tóner") {
-                            contadorMostrar = `${valorContador}`; 
+                        // LÓGICA DE VISUALIZACIÓN SEGÚN LA MÉTRICA PROCESADA
+                        if (metrica === "Porcentaje Tóner Negro") {
+                            contadorMostrar = valorContador; // Muestra directamente el formato de texto "XX%"
                             celdaDiferencia = `<span class="badge-toner">Lectura Directa</span>`;
                         } else if (metrica === "Contador General") {
+                            contadorMostrar = Number(valorContador).toLocaleString();
                             celdaDiferencia = `<span class="sin-datos">Esperando al próximo mes...</span>`;
                             if (datosAnteriores && datosAnteriores[nombreImp] && datosAnteriores[nombreImp][metrica]) {
                                 const valorAnterior = datosAnteriores[nombreImp][metrica];
@@ -131,6 +131,10 @@
                                     celdaDiferencia = `<span class="badge-consumo">+ ${diferencia.toLocaleString()} hojas</span>`;
                                 }
                             }
+                        } else {
+                            // Por si mantienes registros del historial con el nombre viejo "Nivel de Tóner"
+                            contadorMostrar = valorContador;
+                            celdaDiferencia = `<span class="sin-datos">—</span>`;
                         }
                     }
 
@@ -154,3 +158,4 @@
     </script>
 </body>
 </html>
+Usa el código con precau
