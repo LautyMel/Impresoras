@@ -51,7 +51,7 @@
         // === CONFIGURACIÓN DE RUTAS MÓVILES ===
         const GITHUB_USER = "LautyMel";
         const GITHUB_REPO = "Impresoras";
-        const urlJson = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/historial_impresoras.json`;
+        const urlJson = `https://githubusercontent.com{GITHUB_USER}/${GITHUB_REPO}/main/historial_impresoras.json`;
 
         // 1. Cargar el JSON dinámico saltando la caché del navegador
         fetch(`${urlJson}?t=${new Date().getTime()}`)
@@ -113,13 +113,13 @@
                     let contadorMostrar = "";
 
                     // Control de errores de red o lecturas SNMP fallidas
-                    if (valorContador === "ERROR" || valorContador === "ERROR_CAPACIDAD" || valorContador === undefined) {
+                    if (valorContador === "ERROR" || valorContador === undefined) {
                         contadorMostrar = `<span class="badge-error">OFFLINE</span>`;
                         celdaDiferencia = `<span class="sin-datos">—</span>`;
                     } else {
                         // LÓGICA DE VISUALIZACIÓN SEGÚN LA MÉTRICA PROCESADA
                         if (metrica === "Porcentaje Tóner Negro") {
-                            contadorMostrar = valorContador; // Muestra directamente el formato de texto "XX%"
+                            contadorMostrar = valorContador; // Muestra directamente el formato de texto "XX%" o "OK"
                             celdaDiferencia = `<span class="badge-toner">Lectura Directa</span>`;
                         } else if (metrica === "Contador General") {
                             contadorMostrar = Number(valorContador).toLocaleString();
@@ -132,7 +132,7 @@
                                 }
                             }
                         } else {
-                            // Por si mantienes registros del historial con el nombre viejo "Nivel de Tóner"
+                            // Soporte por si quedan registros históricos guardados con la clave antigua "Nivel de Tóner"
                             contadorMostrar = valorContador;
                             celdaDiferencia = `<span class="sin-datos">—</span>`;
                         }
@@ -158,4 +158,3 @@
     </script>
 </body>
 </html>
-Usa el código con precau
