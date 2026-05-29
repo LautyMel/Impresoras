@@ -18,7 +18,7 @@ TIEMPO_REPETICION = 600
 # =======================================================
 
 # SECCIÓN SEGURA: Lee el Token desde el archivo local config.txt
-ruta_token = os.path.join(CARPETA_PROYECTO, "config.txt")
+ruta_token = os.path.join(r"C:\Users\20453243215\Desktop\pp\impresora", "config.txt")
 try:
     with open(ruta_token, "r", encoding="utf-8") as f:
         GITHUB_TOKEN = f.read().strip()
