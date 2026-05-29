@@ -1,26 +1,51 @@
 {
     "2026-05": {
-        "ultima_actualizacion": "2026-05-29 14:45:57",
+        "ultima_actualizacion": "2026-05-29 14:46:25",
         "datos": {
             "Impresora 2": {
                 "ip": "10.25.5.20",
-                "Contador General": 1302
+                "Contador General": 1302,
+                "Nivel de Tóner": "ERROR"
             },
             "Impresora 3": {
                 "ip": "10.25.5.22",
-                "Contador General": 611
+                "Contador General": 611,
+                "Nivel de Tóner": "ERROR"
             },
             "Impresora 5": {
                 "ip": "10.25.5.24",
-                "Contador General": 160
+                "Contador General": 160,
+                "Nivel de Tóner": "ERROR"
             },
             "Impresora 7": {
                 "ip": "10.25.5.23",
-                "Contador General": 284
+                "Contador General": 284,
+                "Nivel de Tóner": "ERROR"
             },
             "Impresora 9": {
                 "ip": "10.25.5.21",
-                "Contador General": 749
+                "Contador General": 749,
+                "Nivel de Tóner": "ERROR"
+            },
+            "Impresora 1": {
+                "ip": "10.25.5.27",
+                "Contador General": "ERROR",
+                "Nivel de Tóner": "ERROR"
+            },
+            "Impresora 4": {
+                "ip": "10.25.5.28",
+                "Contador General": "ERROR",
+                "Nivel de Tóner": "ERROR"
+            },
+            "Impresora 6": {
+                "ip": "10.25.5.29",
+                "Contador General": "ERROR",
+                "Nivel de Tóner": "ERROR"
+            },
+            "Impresora 8": {
+                "ip": "10.25.5.25",
+                "Contador General": "ERROR",
+                "Nivel de Tóner": "ERROR"
             }
         }
     }
