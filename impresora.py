@@ -38,10 +38,10 @@ IMPRESORAS = {
     "Impresora 9": "10.25.5.21"
 }
 
-OIDS_A_PROBAR = {
-    "Contador General": "1.3.6.1.2.1.43.10.2.1.4.1.1",
-    "Nivel de Tóner": "1.3.6.1.2.1.43.11.1.1.9 " # <--- NUEVO OID AGREGADO
-}
+# OIDs fijos para las consultas individuales
+OID_CONTADOR = "1.3.6.1.2.1.43.10.2.1.4.1.1"
+OID_TONER_ACTUAL = "1.3.6.1.2.1.43.11.1.1.9.1.1"
+OID_TONER_MAXIMO = "1.3.6.1.2.1.43.11.1.1.8.1.1"
 
 archivo_datos_local = os.path.join(CARPETA_PROYECTO, "historial_impresoras.json")
 
@@ -116,14 +116,29 @@ def ejecutar_escaneo():
         if nombre_imp not in historial[mes_clave]["datos"]:
             historial[mes_clave]["datos"][nombre_imp] = {"ip": ip_imp}
             
-        for nombre_oid, oid in OIDS_A_PROBAR.items():
-            resultado = consultar_oid_ps(ip_imp, oid)
+        # 1. Consultar Contador General
+        res_contador = consultar_oid_ps(ip_imp, OID_CONTADOR)
+        if res_contador.isdigit():
+            historial[mes_clave]["datos"][nombre_imp]["Contador General"] = int(res_contador)
+        else:
+            historial[mes_clave]["datos"][nombre_imp]["Contador General"] = "ERROR"
+
+        # 2. Consultar y calcular Porcentaje de Tóner Negro
+        res_actual = consultar_oid_ps(ip_imp, OID_TONER_ACTUAL)
+        res_maximo = consultar_oid_ps(ip_imp, OID_TONER_MAXIMO)
+
+        if res_actual.isdigit() and res_maximo.isdigit():
+            val_actual = int(res_actual)
+            val_maximo = int(res_maximo)
             
-            # Guardamos el número si es válido, sino guardamos "ERROR"
-            if resultado.isdigit():
-                historial[mes_clave]["datos"][nombre_imp][nombre_oid] = int(resultado)
+            if val_maximo > 0:
+                # Calcula el porcentaje entero aproximado
+                porcentaje_toner = round((val_actual / val_maximo) * 100)
+                historial[mes_clave]["datos"][nombre_imp]["Porcentaje Tóner Negro"] = f"{porcentaje_toner}%"
             else:
-                historial[mes_clave]["datos"][nombre_imp][nombre_oid] = "ERROR"
+                historial[mes_clave]["datos"][nombre_imp]["Porcentaje Tóner Negro"] = "ERROR_CAPACIDAD"
+        else:
+            historial[mes_clave]["datos"][nombre_imp]["Porcentaje Tóner Negro"] = "ERROR"
 
     json_final = json.dumps(historial, indent=4, ensure_ascii=False)
 
