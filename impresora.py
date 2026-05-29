@@ -39,9 +39,11 @@ IMPRESORAS = {
 }
 
 # OIDs fijos para las consultas individuales
-OID_CONTADOR = "1.3.6.1.2.1.43.10.2.1.4.1.1"
-OID_TONER_ACTUAL = "1.3.6.1.2.1.43.11.1.1.9.1.1"
-OID_TONER_MAXIMO = "1.3.6.1.2.1.43.11.1.1.8.1.1"
+OIDS_A_PROBAR = {
+    "Contador General": "1.3.6.1.2.1.43.10.2.1.4.1.1",
+    "Nivel de Tóner": "1.3.6.1.2.1.43.11.1.1.9.1.1"  # <--- CORREGIDO: Se quitó el espacio y se agregó el índice .1.1 al final
+}
+
 
 archivo_datos_local = os.path.join(CARPETA_PROYECTO, "historial_impresoras.json")
 
