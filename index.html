@@ -32,14 +32,13 @@
                 <tr>
                     <th>Impresora</th>
                     <th>Dirección IP</th>
-                    <th>Métrica</th>
-                    <th>Valor Actual</th>
-                    <th>Estado / Consumo Mensual</th>
+                    <th>Hojas Impresas (Este Mes)</th>
+                    <th>Porcentaje de Tóner</th>
                 </tr>
             </thead>
             <tbody id="tabla-cuerpo">
                 <tr>
-                    <td colspan="5" style="text-align: center; color: #7f8c8d;">Buscando registros...</td>
+                    <td colspan="4" style="text-align: center; color: #7f8c8d;">Buscando registros...</td>
                 </tr>
             </tbody>
         </table>
@@ -51,9 +50,9 @@
         // === CONFIGURACIÓN DE RUTAS MÓVILES ===
         const GITHUB_USER = "LautyMel";
         const GITHUB_REPO = "Impresoras";
-        const urlJson = `https://githubusercontent.com{GITHUB_USER}/${GITHUB_REPO}/main/historial_impresoras.json`;
+        const urlJson = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/historial_impresoras.json`;
 
-        // 1. Cargar el JSON dinámico saltando la caché del navegador
+        // 1. Cargar el JSON dinámico saltando la cache del navegador
         fetch(`${urlJson}?t=${new Date().getTime()}`)
             .then(response => {
                 if (!response.ok) throw new Error("No se pudo obtener el JSON");
@@ -98,6 +97,7 @@
 
             document.getElementById('actualizacion').innerText = `Última lectura de este mes: ${datosHistorial[mesSeleccionado].ultima_actualizacion}`;
 
+            // Calcular el mes anterior para hacer la resta del contador
             const [year, month] = mesSeleccionado.split('-').map(Number);
             const fechaMesAnterior = new Date(year, month - 2, 1);
             const mesAnteriorClave = fechaMesAnterior.getFullYear() + "-" + String(fechaMesAnterior.getMonth() + 1).padStart(2, '0');
@@ -106,48 +106,43 @@
             const datosAnteriores = datosHistorial[mesAnteriorClave] ? datosHistorial[mesAnteriorClave].datos : null;
 
             for (const [nombreImp, info] of Object.entries(datosActuales)) {
-                for (const [metrica, valorContador] of Object.entries(info)) {
-                    if (metrica === 'ip') continue;
+                
+                // Procesar Contador de Hojas (Restando el mes anterior para simular reinicio a 0)
+                let hojasMostrar = `<span class="sin-datos">0 hojas</span>`;
+                const valorContadorActual = info["Contador General"];
 
-                    let celdaDiferencia = `<span class="sin-datos">Esperando datos...</span>`;
-                    let contadorMostrar = "";
-
-                    // Control de errores de red o lecturas SNMP fallidas
-                    if (valorContador === "ERROR" || valorContador === undefined) {
-                        contadorMostrar = `<span class="badge-error">OFFLINE</span>`;
-                        celdaDiferencia = `<span class="sin-datos">—</span>`;
-                    } else {
-                        // LÓGICA DE VISUALIZACIÓN SEGÚN LA MÉTRICA PROCESADA
-                        if (metrica === "Porcentaje Tóner Negro") {
-                            // El toner ya viene como "XX%" o "OK" (o "ERROR" si no hay lectura)
-                            contadorMostrar = valorContador;
-                            celdaDiferencia = `<span class="badge-toner">Lectura Directa</span>`;
-                        } else if (metrica === "Contador General") {
-                            contadorMostrar = Number(valorContador).toLocaleString();
-                            celdaDiferencia = `<span class="sin-datos">Esperando al próximo mes...</span>`;
-                            if (datosAnteriores && datosAnteriores[nombreImp] && datosAnteriores[nombreImp][metrica]) {
-                                const valorAnterior = datosAnteriores[nombreImp][metrica];
-                                if (valorAnterior !== "ERROR" && valorAnterior !== undefined) {
-                                    const diferencia = Number(valorContador) - Number(valorAnterior);
-                                    celdaDiferencia = `<span class="badge-consumo">+ ${diferencia.toLocaleString()} hojas</span>`;
-                                }
-                            }
-                        } else {
-                            // Soporte por si quedan registros históricos guardados con la clave antigua "Nivel de Tóner"
-                            contadorMostrar = valorContador;
-                            celdaDiferencia = `<span class="sin-datos">—</span>`;
-                        }
+                if (valorContadorActual === "ERROR" || valorContadorActual === undefined) {
+                    hojasMostrar = `<span class="badge-error">OFFLINE</span>`;
+                } else if (datosAnteriores && datosAnteriores[nombreImp] && datosAnteriores[nombreImp]["Contador General"]) {
+                    const valorContadorAnterior = datosAnteriores[nombreImp]["Contador General"];
+                    if (valorContadorAnterior !== "ERROR" && valorContadorAnterior !== undefined) {
+                        // Restamos el acumulado del mes pasado para saber el consumo neto de este mes
+                        const diferencia = Number(valorContadorActual) - Number(valorContadorAnterior);
+                        hojasMostrar = `<span class="badge-consumo">${diferencia.toLocaleString()} hojas</span>`;
                     }
-
-                    cuerpo.innerHTML += `
-                        <tr>
-                            <td><strong>${nombreImp}</strong></td>
-                            <td>${info.ip || 'Sin IP'}</td>
-                            <td>${metrica}</td>
-                            <td>${contadorMostrar}</td>
-                            <td>${celdaDiferencia}</td>
-                        </tr>`;
+                } else {
+                    // Si no hay historial del mes anterior, muestra el valor actual como base inicial
+                    hojasMostrar = `<span>${Number(valorContadorActual).toLocaleString()} hojas (Mes base)</span>`;
                 }
+
+                // Procesar Porcentaje de Tóner (Unificando claves nueva y antigua)
+                let valorToner = info["Porcentaje Tóner Negro"] || info["Nivel de Tóner"];
+                let tonerMostrar = "";
+
+                if (valorToner === "ERROR" || valorToner === undefined) {
+                    tonerMostrar = `<span class="badge-error">OFFLINE</span>`;
+                } else {
+                    tonerMostrar = `<span class="badge-toner">${valorToner}</span>`;
+                }
+
+                // Insertar fila unificada por impresora
+                cuerpo.innerHTML += `
+                    <tr>
+                        <td><strong>${nombreImp}</strong></td>
+                        <td>${info.ip || 'Sin IP'}</td>
+                        <td>${hojasMostrar}</td>
+                        <td>${tonerMostrar}</td>
+                    </tr>`;
             }
         }
 
