@@ -6,25 +6,20 @@ from datetime import datetime
 from github import Github  # Librería PyGithub
 
 # ==================== CONFIGURACIÓN ====================
-# Cambia esto por la ruta real de tu proyecto en tu máquina
 CARPETA_PROYECTO = r"C:\Users\20453243215\Desktop\pp\impresora"
-
-# Configuración del Repositorio de GitHub
-GITHUB_REPO = "LautyMel/Impresoras"       # REEMPLAZA: "tu_usuario/nombre-repo"
-GITHUB_FILE_PATH = "historial_impresoras.json" # Nombre del archivo en la nube
+GITHUB_REPO = "LautyMel/Impresoras"       
+GITHUB_FILE_PATH = "historial_impresoras.json" 
 
 # Tiempo de espera entre escaneos (600 segundos = 10 minutos)
 TIEMPO_REPETICION = 600
 # =======================================================
 
-# SECCIÓN SEGURA: Lee el Token desde el archivo local config.txt
-ruta_token = os.path.join(r"C:\Users\20453243215\Desktop\pp\impresora", "config.txt")
+ruta_token = os.path.join(CARPETA_PROYECTO, "config.txt")
 try:
     with open(ruta_token, "r", encoding="utf-8") as f:
         GITHUB_TOKEN = f.read().strip()
 except FileNotFoundError:
     print(f"❌ ERROR: No se encontró el archivo 'config.txt' en {CARPETA_PROYECTO}")
-    print("Por favor, crea el archivo config.txt y pega tu token de GitHub adentro.")
     GITHUB_TOKEN = ""
 
 IMPRESORAS = {
@@ -53,9 +48,15 @@ def consultar_oid_ps(printer, oid):
         $sys.Open("{printer}", "public", 2, 161)
         $sys.Get(".{clean_oid}")
         """
+        
+        # Ocultar la ventana de la consola de PowerShell por completo
+        startupinfo = subprocess.STARTUPINFO()
+        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        
         result = subprocess.run(
             ["powershell", "-Command", ps_command],
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=4
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=4,
+            startupinfo=startupinfo  # <--- Aplicamos el ocultamiento absoluto aquí
         )
         if result.returncode == 0 and result.stdout.strip():
             return result.stdout.strip()
@@ -64,9 +65,7 @@ def consultar_oid_ps(printer, oid):
         return "ERROR"
 
 def subir_a_github(contenido_json):
-    """Sube automáticamente el JSON a tu repositorio usando la API de GitHub"""
     if not GITHUB_TOKEN:
-        print(" -> [GitHub] Sincronización cancelada: Falta el Token de seguridad.")
         return
 
     try:
@@ -74,7 +73,6 @@ def subir_a_github(contenido_json):
         repo = g.get_repo(GITHUB_REPO)
         
         try:
-            # Si el archivo ya existe en GitHub, obtiene su ID (sha) para poder actualizarlo
             contents = repo.get_contents(GITHUB_FILE_PATH)
             repo.update_file(
                 path=GITHUB_FILE_PATH,
@@ -82,17 +80,16 @@ def subir_a_github(contenido_json):
                 content=contenido_json,
                 sha=contents.sha
             )
-            print(" -> [GitHub] Sincronizado exitosamente en la nube.")
+            print(" -> [GitHub] Sincronizado exitosamente.")
         except Exception:
-            # Si el archivo no existe en GitHub, lo crea por primera vez
             repo.create_file(
                 path=GITHUB_FILE_PATH,
                 message="Primer registro automático de historial",
                 content=contenido_json
             )
-            print(" -> [GitHub] Archivo creado por primera vez en la nube.")
+            print(" -> [GitHub] Archivo creado por primera vez.")
     except Exception as e:
-        print(f" -> [GitHub] ERROR al subir los datos: {e}")
+        print(f" -> [GitHub] ERROR: {e}")
 
 def ejecutar_escaneo():
     ahora = datetime.now()
@@ -122,22 +119,19 @@ def ejecutar_escaneo():
                     historial[mes_clave]["datos"][nombre_imp] = {"ip": ip_imp}
                 historial[mes_clave]["datos"][nombre_imp][nombre_oid] = int(resultado)
 
-    # Convertir a cadena de texto JSON legible
     json_final = json.dumps(historial, indent=4, ensure_ascii=False)
 
-    # 1. Guardar copia local de respaldo en tu PC
     with open(archivo_datos_local, "w", encoding="utf-8") as f:
         f.write(json_final)
-    print(f"[{fecha_str}] Historial guardado localmente.")
+    print(f"[{fecha_str}] Historial guardado.")
 
-    # 2. Subir directamente a GitHub de forma transparente
     subir_a_github(json_final)
 
 if __name__ == "__main__":
     if not os.path.exists(CARPETA_PROYECTO):
         os.makedirs(CARPETA_PROYECTO)
 
-    print("Monitor de impresoras iniciado con protección de credenciales...")
+    print("Monitor iniciado...")
     
     while True:
         ejecutar_escaneo()
