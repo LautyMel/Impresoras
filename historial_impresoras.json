@@ -1,6 +1,6 @@
 {
     "2026-05": {
-        "ultima_actualizacion": "2026-05-29 12:13:43",
+        "ultima_actualizacion": "2026-05-29 12:16:48",
         "datos": {
             "Impresora 2": {
                 "ip": "10.25.5.20",
@@ -8,7 +8,7 @@
             },
             "Impresora 3": {
                 "ip": "10.25.5.22",
-                "Contador General": 605
+                "Contador General": 608
             },
             "Impresora 5": {
                 "ip": "10.25.5.24",
@@ -20,7 +20,7 @@
             },
             "Impresora 9": {
                 "ip": "10.25.5.21",
-                "Contador General": 743
+                "Contador General": 744
             }
         }
     }
