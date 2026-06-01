@@ -5,10 +5,10 @@ import time
 import sys
 from datetime import datetime
 from github import Github  # Librería PyGithub
-from colorama import init, Fore, Style  # Librería para colores en Windows
 
 # ==================== CONFIGURACIÓN ====================
-CARPETA_PROYECTO = r"C:\Users\20453243215\Desktop\pp\impresora"
+
+CARPETA_PROYECTO = os.path.dirname(os.path.abspath(__file__))
 
 # Configuración del Repositorio de GitHub
 GITHUB_REPO = "LautyMel/Impresoras"       
@@ -128,31 +128,6 @@ def subir_a_github(contenido_json):
     except Exception as e:
         print(f" -> [GitHub] ERROR al subir los datos: {e}")
 
-def obtener_color_y_estado(toner_str):
-    """
-    Analiza el string del tóner (ej: '85%') y determina el color de texto
-    para el JSON junto con el objeto de color correspondiente de Colorama.
-    """
-    if toner_str == "ERROR":
-        return "Desconocido", Fore.LIGHTBLACK_EX  # Gris / Negro claro
-    if toner_str == "OK":
-        return "Verde", Fore.GREEN
-
-    try:
-        # Quitamos el '%' y pasamos a número entero
-        porcentaje = int(toner_str.replace("%", "").strip())
-        
-        if 50 <= porcentaje <= 100:
-            return "Verde", Fore.GREEN
-        elif 20 <= porcentaje < 50:
-            return "Amarillo", Fore.YELLOW
-        elif 0 <= porcentaje < 20:
-            return "Rojo", Fore.RED
-        else:
-            return "Desconocido", Fore.LIGHTBLACK_EX
-    except ValueError:
-        return "Desconocido", Fore.LIGHTBLACK_EX
-
 def ejecutar_escaneo():
     ahora = datetime.now()
     fecha_str = ahora.strftime("%Y-%m-%d %H:%M:%S")
@@ -170,6 +145,7 @@ def ejecutar_escaneo():
     else:
         historial = {}
 
+    # Si cambia el mes, crea automáticamente la nueva sección conservando las anteriores
     if mes_clave not in historial:
         historial[mes_clave] = {"ultima_actualizacion": fecha_str, "datos": {}}
 
@@ -178,6 +154,7 @@ def ejecutar_escaneo():
     for nombre_imp, ip_imp in IMPRESORAS.items():
         print(f"Escaneando {nombre_imp} ({ip_imp})...")
         
+        # Aseguramos que la estructura interna mantenga la IP actualizada
         if nombre_imp not in historial[mes_clave]["datos"]:
             historial[mes_clave]["datos"][nombre_imp] = {}
         
@@ -192,30 +169,20 @@ def ejecutar_escaneo():
         else:
             historial[mes_clave]["datos"][nombre_imp]["Contador General"] = "ERROR"
             
-        # Procesar rangos de color
-        color_texto, obj_color = obtener_color_y_estado(toner)
-
-        # Guardar en el JSON (Tóner y su estado en texto)
+        # Guardar Tóner
         historial[mes_clave]["datos"][nombre_imp]["Porcentaje Tóner Negro"] = toner
-        historial[mes_clave]["datos"][nombre_imp]["Estado Tóner"] = color_texto
-
-        # Mostrar en consola usando Colorama y reseteando el estilo al final de la línea
-        print(f" -> {nombre_imp}: {obj_color}Tóner al {toner} ({color_texto}){Style.RESET_ALL}")
 
     json_final = json.dumps(historial, indent=4, ensure_ascii=False)
 
     with open(archivo_datos_local, "w", encoding="utf-8") as f:
         f.write(json_final)
-    print(f"\n[{fecha_str}] Historial guardado localmente.")
+    print(f"[{fecha_str}] Historial guardado localmente.")
 
     subir_a_github(json_final)
 
 if __name__ == "__main__":
     if not os.path.exists(CARPETA_PROYECTO):
         os.makedirs(CARPETA_PROYECTO)
-
-    # Inicializa colorama obligando a mapear los colores en Windows (incluso terminales viejas)
-    init(convert=True)
 
     print("Monitor inteligente de impresoras iniciado...")
     
