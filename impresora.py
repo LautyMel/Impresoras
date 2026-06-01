@@ -1,13 +1,14 @@
 import subprocess
 import json
-import os
+import os  # <-- Esta librería es la que hace la magia abajo
 import time
 import sys
 from datetime import datetime
-from github import Github  # Librería PyGithub
+from github import Github  
 
 # ==================== CONFIGURACIÓN ====================
-CARPETA_PROYECTO = r"C:\Users\20453243215\Desktop\pp\impresora"
+# CAMBIO AQUÍ: Eliminamos tu ruta privada y ponemos esta línea automática
+CARPETA_PROYECTO = os.path.dirname(os.path.abspath(__file__))
 
 # Configuración del Repositorio de GitHub
 GITHUB_REPO = "LautyMel/Impresoras"       
@@ -17,7 +18,9 @@ GITHUB_FILE_PATH = "historial_impresoras.json"
 TIEMPO_REPETICION = 600
 # =======================================================
 
+# Esto ahora buscará "config.txt" en la carpeta automática oculta
 ruta_token = os.path.join(CARPETA_PROYECTO, "config.txt")
+
 try:
     with open(ruta_token, "r", encoding="utf-8") as f:
         GITHUB_TOKEN = f.read().strip()
