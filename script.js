@@ -75,7 +75,7 @@ function renderizarTabla() {
             }
         } else {
             // Si no hay historial del mes anterior, muestra el valor actual como base inicial
-            hojasMostrar = `<span>${Number(valorContadorActual).toLocaleString()} hojas (Mes base)</span>`;
+         hojasMostrar = `<span class="badge-consumo">${Number(valorContadorActual).toLocaleString()} hojas (Mes base)</span>`;
         }
 
     
