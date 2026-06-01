@@ -1,13 +1,12 @@
 import subprocess
 import json
-import os  # <-- Esta librería es la que hace la magia abajo
+import os  
 import time
 import sys
 from datetime import datetime
 from github import Github  
 
 # ==================== CONFIGURACIÓN ====================
-# CAMBIO AQUÍ: Eliminamos tu ruta privada y ponemos esta línea automática
 CARPETA_PROYECTO = os.path.dirname(os.path.abspath(__file__))
 
 # Configuración del Repositorio de GitHub
