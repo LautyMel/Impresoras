@@ -30,7 +30,7 @@ El script combina librerías estándar de Python (nativas) con una librería ext
 07: from github import Github  # Librería PyGithub
 08: 
 09: # ==================== CONFIGURACIÓN ====================
-10: CARPETA_PROYECTO = r"C:\Users\20453243215\Desktop\pp\impresora"
+10: CARPETA_PROYECTO = os.path.dirname(os.path.abspath(__file__))
 11: 
 12: # Configuración del Repositorio de GitHub
 13: GITHUB_REPO = "LautyMel/Impresoras"       
