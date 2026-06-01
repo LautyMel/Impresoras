@@ -5,6 +5,7 @@ import time
 import sys
 from datetime import datetime
 from github import Github  # Librería PyGithub
+from colorama import init, Fore, Style  # Librería para colores en Windows
 
 # ==================== CONFIGURACIÓN ====================
 CARPETA_PROYECTO = r"C:\Users\20453243215\Desktop\pp\impresora"
@@ -130,27 +131,27 @@ def subir_a_github(contenido_json):
 def obtener_color_y_estado(toner_str):
     """
     Analiza el string del tóner (ej: '85%') y determina el color de texto
-    para el JSON y el código ANSI de color para la consola de Python.
+    para el JSON junto con el objeto de color correspondiente de Colorama.
     """
     if toner_str == "ERROR":
-        return "Desconocido", "\033[90m"  # Gris
+        return "Desconocido", Fore.LIGHTBLACK_EX  # Gris / Negro claro
     if toner_str == "OK":
-        return "Verde", "\033[92m"       # Verde
+        return "Verde", Fore.GREEN
 
     try:
         # Quitamos el '%' y pasamos a número entero
         porcentaje = int(toner_str.replace("%", "").strip())
         
         if 50 <= porcentaje <= 100:
-            return "Verde", "\033[92m"       # Verde
+            return "Verde", Fore.GREEN
         elif 20 <= porcentaje < 50:
-            return "Amarillo", "\033[93m"    # Amarillo
+            return "Amarillo", Fore.YELLOW
         elif 0 <= porcentaje < 20:
-            return "Rojo", "\033[91m"        # Rojo
+            return "Rojo", Fore.RED
         else:
-            return "Desconocido", "\033[90m"
+            return "Desconocido", Fore.LIGHTBLACK_EX
     except ValueError:
-        return "Desconocido", "\033[90m"
+        return "Desconocido", Fore.LIGHTBLACK_EX
 
 def ejecutar_escaneo():
     ahora = datetime.now()
@@ -174,9 +175,6 @@ def ejecutar_escaneo():
 
     historial[mes_clave]["ultima_actualizacion"] = fecha_str
 
-    # Códigos ANSI para resetear el color en consola
-    RESET_COLOR = "\033[0m"
-
     for nombre_imp, ip_imp in IMPRESORAS.items():
         print(f"Escaneando {nombre_imp} ({ip_imp})...")
         
@@ -195,14 +193,14 @@ def ejecutar_escaneo():
             historial[mes_clave]["datos"][nombre_imp]["Contador General"] = "ERROR"
             
         # Procesar rangos de color
-        color_texto, color_ansi = obtener_color_y_estado(toner)
+        color_texto, obj_color = obtener_color_y_estado(toner)
 
-        # Guardar en el JSON (Tóner y su estado)
+        # Guardar en el JSON (Tóner y su estado en texto)
         historial[mes_clave]["datos"][nombre_imp]["Porcentaje Tóner Negro"] = toner
         historial[mes_clave]["datos"][nombre_imp]["Estado Tóner"] = color_texto
 
-        # Mostrar en consola de forma vistosa y con color
-        print(f" -> {nombre_imp}: {color_ansi}Tóner al {toner} ({color_texto}){RESET_COLOR}")
+        # Mostrar en consola usando Colorama y reseteando el estilo al final de la línea
+        print(f" -> {nombre_imp}: {obj_color}Tóner al {toner} ({color_texto}){Style.RESET_ALL}")
 
     json_final = json.dumps(historial, indent=4, ensure_ascii=False)
 
@@ -216,9 +214,8 @@ if __name__ == "__main__":
     if not os.path.exists(CARPETA_PROYECTO):
         os.makedirs(CARPETA_PROYECTO)
 
-    # Forzar a Windows a aceptar códigos de color ANSI en la terminal estándar
-    if sys.platform == "win32":
-        os.system("")
+    # Inicializa colorama obligando a mapear los colores en Windows (incluso terminales viejas)
+    init(convert=True)
 
     print("Monitor inteligente de impresoras iniciado...")
     
