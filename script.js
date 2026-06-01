@@ -78,14 +78,27 @@ function renderizarTabla() {
             hojasMostrar = `<span>${Number(valorContadorActual).toLocaleString()} hojas (Mes base)</span>`;
         }
 
-        // Procesar Porcentaje de Tóner (Unificando claves nueva y antigua)
+    
+      // Procesar Porcentaje de Tóner (Unificando claves nueva y antigua) con colores condicionales
         let valorToner = info["Porcentaje Tóner Negro"] || info["Nivel de Tóner"];
         let tonerMostrar = "";
 
         if (valorToner === "ERROR" || valorToner === undefined) {
             tonerMostrar = `<span class="badge-error">OFFLINE</span>`;
         } else {
-            tonerMostrar = `<span class="badge-toner">${valorToner}</span>`;
+            // Extraemos solo el número eliminando el '%' si viniera con él
+            let porcentaje = parseInt(String(valorToner).replace('%', ''));
+
+            if (isNaN(porcentaje)) {
+                // Por si el valor no es numérico (por ejemplo un "OK") usa la clase por defecto
+                tonerMostrar = `<span class="badge-toner">${valorToner}</span>`;
+            } else if (porcentaje >= 50 && porcentaje <= 100) {
+                tonerMostrar = `<span class="toner-alto">${valorToner}</span>`;
+            } else if (porcentaje >= 20 && porcentaje < 50) {
+                tonerMostrar = `<span class="toner-medio">${valorToner}</span>`;
+            } else {
+                tonerMostrar = `<span class="toner-bajo">${valorToner}</span>`;
+            }
         }
 
         // Insertar fila unificada por impresora
