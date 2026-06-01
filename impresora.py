@@ -1,13 +1,13 @@
 import subprocess
 import json
-import os  
+import os
 import time
 import sys
 from datetime import datetime
-from github import Github  
+from github import Github  # Librería PyGithub
 
 # ==================== CONFIGURACIÓN ====================
-CARPETA_PROYECTO = os.path.dirname(os.path.abspath(__file__))
+CARPETA_PROYECTO = r"C:\Users\20453243215\Desktop\pp\impresora"
 
 # Configuración del Repositorio de GitHub
 GITHUB_REPO = "LautyMel/Impresoras"       
@@ -17,9 +17,7 @@ GITHUB_FILE_PATH = "historial_impresoras.json"
 TIEMPO_REPETICION = 600
 # =======================================================
 
-# Esto ahora buscará "config.txt" en la carpeta automática oculta
 ruta_token = os.path.join(CARPETA_PROYECTO, "config.txt")
-
 try:
     with open(ruta_token, "r", encoding="utf-8") as f:
         GITHUB_TOKEN = f.read().strip()
@@ -29,9 +27,9 @@ except FileNotFoundError:
     GITHUB_TOKEN = ""
 
 IMPRESORAS = {
-    "Impresora": "10.25.5.27",
+    "Impresora 1": "10.25.5.27",
     "Impresora 2": "10.25.5.20",
-    "Impresora 1": "10.25.5.22",
+    "Impresora 3": "10.25.5.22",
     "Impresora 4": "10.25.5.28",
     "Impresora 5": "10.25.5.24",
     "Impresora 6": "10.25.5.29",
@@ -129,6 +127,31 @@ def subir_a_github(contenido_json):
     except Exception as e:
         print(f" -> [GitHub] ERROR al subir los datos: {e}")
 
+def obtener_color_y_estado(toner_str):
+    """
+    Analiza el string del tóner (ej: '85%') y determina el color de texto
+    para el JSON y el código ANSI de color para la consola de Python.
+    """
+    if toner_str == "ERROR":
+        return "Desconocido", "\033[90m"  # Gris
+    if toner_str == "OK":
+        return "Verde", "\033[92m"       # Verde
+
+    try:
+        # Quitamos el '%' y pasamos a número entero
+        porcentaje = int(toner_str.replace("%", "").strip())
+        
+        if 50 <= porcentaje <= 100:
+            return "Verde", "\033[92m"       # Verde
+        elif 20 <= porcentaje < 50:
+            return "Amarillo", "\033[93m"    # Amarillo
+        elif 0 <= porcentaje < 20:
+            return "Rojo", "\033[91m"        # Rojo
+        else:
+            return "Desconocido", "\033[90m"
+    except ValueError:
+        return "Desconocido", "\033[90m"
+
 def ejecutar_escaneo():
     ahora = datetime.now()
     fecha_str = ahora.strftime("%Y-%m-%d %H:%M:%S")
@@ -146,16 +169,17 @@ def ejecutar_escaneo():
     else:
         historial = {}
 
-    # Si cambia el mes, crea automáticamente la nueva sección conservando las anteriores
     if mes_clave not in historial:
         historial[mes_clave] = {"ultima_actualizacion": fecha_str, "datos": {}}
 
     historial[mes_clave]["ultima_actualizacion"] = fecha_str
 
+    # Códigos ANSI para resetear el color en consola
+    RESET_COLOR = "\033[0m"
+
     for nombre_imp, ip_imp in IMPRESORAS.items():
         print(f"Escaneando {nombre_imp} ({ip_imp})...")
         
-        # Aseguramos que la estructura interna mantenga la IP actualizada
         if nombre_imp not in historial[mes_clave]["datos"]:
             historial[mes_clave]["datos"][nombre_imp] = {}
         
@@ -170,20 +194,31 @@ def ejecutar_escaneo():
         else:
             historial[mes_clave]["datos"][nombre_imp]["Contador General"] = "ERROR"
             
-        # Guardar Tóner
+        # Procesar rangos de color
+        color_texto, color_ansi = obtener_color_y_estado(toner)
+
+        # Guardar en el JSON (Tóner y su estado)
         historial[mes_clave]["datos"][nombre_imp]["Porcentaje Tóner Negro"] = toner
+        historial[mes_clave]["datos"][nombre_imp]["Estado Tóner"] = color_texto
+
+        # Mostrar en consola de forma vistosa y con color
+        print(f" -> {nombre_imp}: {color_ansi}Tóner al {toner} ({color_texto}){RESET_COLOR}")
 
     json_final = json.dumps(historial, indent=4, ensure_ascii=False)
 
     with open(archivo_datos_local, "w", encoding="utf-8") as f:
         f.write(json_final)
-    print(f"[{fecha_str}] Historial guardado localmente.")
+    print(f"\n[{fecha_str}] Historial guardado localmente.")
 
     subir_a_github(json_final)
 
 if __name__ == "__main__":
     if not os.path.exists(CARPETA_PROYECTO):
         os.makedirs(CARPETA_PROYECTO)
+
+    # Forzar a Windows a aceptar códigos de color ANSI en la terminal estándar
+    if sys.platform == "win32":
+        os.system("")
 
     print("Monitor inteligente de impresoras iniciado...")
     
