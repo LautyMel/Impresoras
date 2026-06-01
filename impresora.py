@@ -27,9 +27,9 @@ except FileNotFoundError:
     GITHUB_TOKEN = ""
 
 IMPRESORAS = {
-    "Impresora 1": "10.25.5.27",
+    "Impresora": "10.25.5.27",
     "Impresora 2": "10.25.5.20",
-    "Impresora 3": "10.25.5.22",
+    "Impresora 1": "10.25.5.22",
     "Impresora 4": "10.25.5.28",
     "Impresora 5": "10.25.5.24",
     "Impresora 6": "10.25.5.29",
