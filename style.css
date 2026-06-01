@@ -89,3 +89,31 @@
      margin-bottom: 15px;
      cursor: pointer;
  }
+
+/* Nuevos estados dinámicos para el tóner */
+.toner-alto {
+    background-color: #2ecc71; /* Verde */
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 0.9em;
+}
+
+.toner-medio {
+    background-color: #f1c40f; /* Amarillo */
+    color: #333; /* Texto oscuro para mejor contraste */
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 0.9em;
+}
+
+.toner-bajo {
+    background-color: #e74c3c; /* Rojo */
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 0.9em;
+}
