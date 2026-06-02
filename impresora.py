@@ -175,7 +175,7 @@ def ejecutar_escaneo():
             historial[mes_clave]["datos"][nombre_imp]["Contador General"] = "ERROR"
             
         # Guardar Tóner
-        historial[mes_clave]["datos"][nombre_imp]["Porcentaje Tóner Negro"] = toner
+        historial[mes_clave]["datos"][nombre_imp]["Porcentaje de Tóner"] = toner
 
     json_final = json.dumps(historial, indent=4, ensure_ascii=False)
 
