@@ -35,12 +35,12 @@
         }
     },
     "2026-06": {
-        "ultima_actualizacion": "2026-06-02 15:38:29",
+        "ultima_actualizacion": "2026-06-02 15:40:19",
         "datos": {
             "Impresora 1": {
-                "ip": "10.25.5.27",
-                "Contador General": "ERROR",
-                "Porcentaje Tóner Negro": "ERROR"
+                "ip": "10.25.5.19",
+                "Contador General": 1322,
+                "Porcentaje Tóner Negro": "61%"
             },
             "Impresora 2": {
                 "ip": "10.25.5.20",
@@ -48,39 +48,24 @@
                 "Porcentaje Tóner Negro": "24%"
             },
             "Impresora 3": {
+                "ip": "10.25.5.21",
+                "Contador General": 817,
+                "Porcentaje Tóner Negro": "71%"
+            },
+            "Impresora 4": {
                 "ip": "10.25.5.22",
                 "Contador General": 632,
                 "Porcentaje Tóner Negro": "82%"
             },
-            "Impresora 4": {
-                "ip": "10.25.5.28",
-                "Contador General": "ERROR",
-                "Porcentaje Tóner Negro": "ERROR"
-            },
             "Impresora 5": {
-                "ip": "10.25.5.24",
-                "Contador General": 294,
-                "Porcentaje Tóner Negro": "100%"
-            },
-            "Impresora 6": {
-                "ip": "10.25.5.29",
-                "Contador General": "ERROR",
-                "Porcentaje Tóner Negro": "ERROR"
-            },
-            "Impresora 7": {
                 "ip": "10.25.5.23",
                 "Contador General": 434,
                 "Porcentaje Tóner Negro": "100%"
             },
-            "Impresora 8": {
-                "ip": "10.25.5.25",
-                "Contador General": "ERROR",
-                "Porcentaje Tóner Negro": "ERROR"
-            },
-            "Impresora 9": {
-                "ip": "10.25.5.21",
-                "Contador General": 817,
-                "Porcentaje Tóner Negro": "71%"
+            "Impresora 6": {
+                "ip": "10.25.5.24",
+                "Contador General": 294,
+                "Porcentaje Tóner Negro": "100%"
             }
         }
     }
