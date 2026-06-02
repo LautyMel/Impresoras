@@ -11,7 +11,7 @@ from github import Github  # Librería PyGithub
 CARPETA_PROYECTO = os.path.dirname(os.path.abspath(__file__))
 
 # Configuración del Repositorio de GitHub
-GITHUB_REPO = "LautyMel/Impresoras"       
+GITHUB_REPO = "LautyMel/Impresoras"      
 GITHUB_FILE_PATH = "historial_impresoras.json" 
 
 # Tiempo de espera entre escaneos (600 segundos = 10 minutos)
@@ -142,11 +142,19 @@ def ejecutar_escaneo():
     else:
         historial = {}
 
-    # Si cambia el mes, crea automáticamente la nueva sección conservando las anteriores
+    # Si cambia el mes, crea automáticamente la nueva sección
     if mes_clave not in historial:
         historial[mes_clave] = {"ultima_actualizacion": fecha_str, "datos": {}}
 
     historial[mes_clave]["ultima_actualizacion"] = fecha_str
+
+    # --- CORRECCIÓN AUTOMÁTICA DE IMPRESORAS ELIMINADAS ---
+    # Revisamos las impresoras del JSON para el mes actual y borramos las que ya no correspondan
+    impresoras_en_json = list(historial[mes_clave]["datos"].keys())
+    for nombre_guardado in impresoras_en_json:
+        if nombre_guardado not in IMPRESORAS:
+            del historial[mes_clave]["datos"][nombre_guardado]
+    # ------------------------------------------------------
 
     for nombre_imp, ip_imp in IMPRESORAS.items():
         print(f"Escaneando {nombre_imp} ({ip_imp})...")
