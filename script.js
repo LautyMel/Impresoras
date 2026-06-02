@@ -58,9 +58,10 @@ function renderizarTabla() {
     const datosActuales = datosHistorial[mesSeleccionado].datos;
     const datosAnteriores = datosHistorial[mesAnteriorClave] ? datosHistorial[mesAnteriorClave].datos : null;
 
+  
     for (const [nombreImp, info] of Object.entries(datosActuales)) {
 
-        // Procesar Contador de Hojas (Restando el mes anterior para simular reinicio a 0)
+        // Procesar Contador de Hojas
         let hojasMostrar = `<span class="sin-datos">0 hojas</span>`;
         const valorContadorActual = info["Contador General"];
 
@@ -69,48 +70,43 @@ function renderizarTabla() {
         } else if (datosAnteriores && datosAnteriores[nombreImp] && datosAnteriores[nombreImp]["Contador General"]) {
             const valorContadorAnterior = datosAnteriores[nombreImp]["Contador General"];
             if (valorContadorAnterior !== "ERROR" && valorContadorAnterior !== undefined) {
-                // Restamos el acumulado del mes pasado para saber el consumo neto de este mes
                 const diferencia = Number(valorContadorActual) - Number(valorContadorAnterior);
                 hojasMostrar = `<span class="badge-consumo">${diferencia.toLocaleString()} hojas</span>`;
             }
         } else {
-            // Si no hay historial del mes anterior, muestra el valor actual como base inicial
-         hojasMostrar = `<span class="badge-consumo">${Number(valorContadorActual).toLocaleString()} hojas (Mes base)</span>`;
+            hojasMostrar = `<span class="badge-consumo">${Number(valorContadorActual).toLocaleString()} hojas </span>`;
         }
 
-    
-      // Procesar Porcentaje de Tóner (Unificando claves nueva y antigua) con colores condicionales
-        let valorToner = info["Porcentaje Tóner Negro"] || info["Nivel de Tóner"];
+        // Procesar Porcentaje de Tóner
+        let valorOriginal = info["Porcentaje Tóner Negro"] || info["Nivel de Tóner"];
         let tonerMostrar = "";
 
-        if (valorToner === "ERROR" || valorToner === undefined) {
+        if (valorOriginal === "ERROR" || valorOriginal === undefined || valorOriginal === null || valorOriginal === "") {
             tonerMostrar = `<span class="badge-error">OFFLINE</span>`;
         } else {
-            // Extraemos solo el número eliminando el '%' si viniera con él
-            let porcentaje = parseInt(String(valorToner).replace('%', ''));
+            let valorToner = parseInt(valorOriginal, 10);
 
-            if (isNaN(porcentaje)) {
-                // Por si el valor no es numérico (por ejemplo un "OK") usa la clase por defecto
-                tonerMostrar = `<span class="badge-toner">${valorToner}</span>`;
-            } else if (porcentaje >= 50 && porcentaje <= 100) {
-                tonerMostrar = `<span class="toner-alto">${valorToner}</span>`;
-            } else if (porcentaje >= 20 && porcentaje < 50) {
-                tonerMostrar = `<span class="toner-medio">${valorToner}</span>`;
+            if (valorToner >= 50 && valorToner <= 100) {
+                tonerMostrar = `<span class="toner-alto">${valorToner}%</span>`; 
+            } else if (valorToner >= 20 && valorToner < 50) {
+                tonerMostrar = `<span class="toner-medio">${valorToner}%</span>`;
             } else {
-                tonerMostrar = `<span class="toner-bajo">${valorToner}</span>`;
+                tonerMostrar = `<span class="toner-bajo">${valorToner}%</span>`;
             }
-        }
+        } 
 
         // Insertar fila unificada por impresora
         cuerpo.innerHTML += `
-                    <tr>
-                        <td><strong>${nombreImp}</strong></td>
-                        <td>${info.ip || 'Sin IP'}</td>
-                        <td>${hojasMostrar}</td>
-                        <td>${tonerMostrar}</td>
-                    </tr>`;
-    }
-}
+            <tr>
+                <td><strong>${nombreImp}</strong></td>
+                <td>${info.ip || 'Sin IP'}</td>
+                <td>${hojasMostrar}</td>
+                <td>${tonerMostrar}</td>
+            </tr>`;
+            
+    } 
+} 
+
 
 function traducirMes(mesClave) {
     const [year, month] = mesClave.split('-');
