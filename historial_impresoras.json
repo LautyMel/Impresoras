@@ -30,7 +30,10 @@
             "Impresora 6": {
                 "ip": "10.25.5.24",
                 "Contador General": 148,
-                "Nivel de Tóner": "100%"
+                "Porcentaje Tóner Negro": "100%",
+                "Porcentaje Tóner Cian": "100%",
+                "Porcentaje Tóner Magenta": "100%",
+                "Porcentaje Tóner Amarillo": "100%"
             },
             "Impresora 7": {
                 "ip": "10.209.34.69",
