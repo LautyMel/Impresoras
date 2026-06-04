@@ -33,9 +33,11 @@ IMPRESORAS = {
     "Impresora 3": "10.25.5.21",
     "Impresora 4": "10.25.5.22",
     "Impresora 5": "10.25.5.23",
-    "Impresora 6": "10.25.5.24"
-}
-
+    "Impresora 6": "10.25.5.24",
+    "Impresora 7": "10.209.34.69",
+    "Impresora 8": "10.209.87.29",  
+    "Impresora 9": "10.209.87.142"
+    }
 def consultar_impresora_avanzado(printer):
     """
     Ejecuta un script de PowerShell optimizado que extrae el contador general
