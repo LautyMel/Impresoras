@@ -99,13 +99,13 @@ function renderizarTabla() {
 
         // Procesar Porcentaje de Tóner Negro
         let valorOriginalNegro = info["Porcentaje Tóner Negro"] || info["Nivel de Tóner"];
-        let tonerMostrar = formatearEtiquetaToner(valorOriginalNegro );
+        let tonerMostrar = formatearEtiquetaToner(valorOriginalNegro, "N:" );
 
         // Procesar Tóner de color (si existen en el JSON de esta impresora)
         if (info["Porcentaje Tóner Cian"] !== undefined) {
-            let tCian = formatearEtiquetaToner(info["Porcentaje Tóner Cian"]);
-            let tMagenta = formatearEtiquetaToner(info["Porcentaje Tóner Magenta"]);
-            let tAmarillo = formatearEtiquetaToner(info["Porcentaje Tóner Amarillo"]);
+            let tCian = formatearEtiquetaToner(info["Porcentaje Tóner Cian"],"C:");
+            let tMagenta = formatearEtiquetaToner(info["Porcentaje Tóner Magenta"],"M:");
+            let tAmarillo = formatearEtiquetaToner(info["Porcentaje Tóner Amarillo"],"A:");
             
             // Añadimos saltos de línea estructurados o un contenedor para que se vean juntos ordenadamente
             tonerMostrar = `
