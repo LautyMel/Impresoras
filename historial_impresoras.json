@@ -39,12 +39,12 @@
             },
             "Impresora 8": {
                 "ip": "10.209.87.29",
-                "Contador General": "ERROR",
+                "Contador General": 331,
                 "Nivel de Tóner": "89%"
             },
             "Impresora 9": {
                 "ip": "10.209.87.142",
-                "Contador General": "ERROR",
+                "Contador General": 658,
                 "Nivel de Tóner": "66%"
             }
         }
