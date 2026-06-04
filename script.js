@@ -37,6 +37,26 @@ fetch(`${urlJson}?t=${new Date().getTime()}`)
         document.getElementById('actualizacion').innerHTML = "<span style='color: #e74c3c; font-weight: bold;'>Error: No se pudo conectar con los datos de GitHub. Revisa el usuario y repositorio.</span>";
     });
 
+// Función auxiliar interna para dar estilo a cualquier tipo de tóner
+function formatearEtiquetaToner(valorOriginal, prefijoColor = "") {
+    if (valorOriginal === "ERROR" || valorOriginal === undefined || valorOriginal === null || valorOriginal === "") {
+        return `<span class="badge-error">${prefijoColor}OFFLINE</span>`;
+    }
+    
+    let valorToner = parseInt(valorOriginal, 10);
+    let claseEstilo = "";
+
+    if (valorToner >= 50 && valorToner <= 100) {
+        claseEstilo = "toner-alto"; 
+    } else if (valorToner >= 20 && valorToner < 50) {
+        claseEstilo = "toner-medio";
+    } else {
+        claseEstilo = "toner-bajo";
+    }
+
+    return `<span class="${claseEstilo}">${prefijoColor}${valorToner}%</span>`;
+}
+
 // 2. Función para calcular diferencias y construir la interfaz
 function renderizarTabla() {
     const selector = document.getElementById('selector-mes');
@@ -58,7 +78,7 @@ function renderizarTabla() {
     const datosActuales = datosHistorial[mesSeleccionado].datos;
     const datosAnteriores = datosHistorial[mesAnteriorClave] ? datosHistorial[mesAnteriorClave].datos : null;
 
-  
+    // INICIO DEL BUCLE FOR
     for (const [nombreImp, info] of Object.entries(datosActuales)) {
 
         // Procesar Contador de Hojas
@@ -77,23 +97,23 @@ function renderizarTabla() {
             hojasMostrar = `<span class="badge-consumo">${Number(valorContadorActual).toLocaleString()} hojas </span>`;
         }
 
-        // Procesar Porcentaje de Tóner
-        let valorOriginal = info["Porcentaje Tóner Negro"] || info["Nivel de Tóner"];
-        let tonerMostrar = "";
+        // Procesar Porcentaje de Tóner Negro
+        let valorOriginalNegro = info["Porcentaje Tóner Negro"] || info["Nivel de Tóner"];
+        let tonerMostrar = formatearEtiquetaToner(valorOriginalNegro );
 
-        if (valorOriginal === "ERROR" || valorOriginal === undefined || valorOriginal === null || valorOriginal === "") {
-            tonerMostrar = `<span class="badge-error">OFFLINE</span>`;
-        } else {
-            let valorToner = parseInt(valorOriginal, 10);
-
-            if (valorToner >= 50 && valorToner <= 100) {
-                tonerMostrar = `<span class="toner-alto">${valorToner}%</span>`; 
-            } else if (valorToner >= 20 && valorToner < 50) {
-                tonerMostrar = `<span class="toner-medio">${valorToner}%</span>`;
-            } else {
-                tonerMostrar = `<span class="toner-bajo">${valorToner}%</span>`;
-            }
-        } 
+        // Procesar Tóner de color (si existen en el JSON de esta impresora)
+        if (info["Porcentaje Tóner Cian"] !== undefined) {
+            let tCian = formatearEtiquetaToner(info["Porcentaje Tóner Cian"]);
+            let tMagenta = formatearEtiquetaToner(info["Porcentaje Tóner Magenta"]);
+            let tAmarillo = formatearEtiquetaToner(info["Porcentaje Tóner Amarillo"]);
+            
+            // Añadimos saltos de línea estructurados o un contenedor para que se vean juntos ordenadamente
+            tonerMostrar = `
+                <div class="bloque-toners">
+                    ${tonerMostrar} ${tCian} ${tMagenta} ${tAmarillo}
+                </div>
+            `;
+        }
 
         // Insertar fila unificada por impresora
         cuerpo.innerHTML += `
@@ -103,11 +123,10 @@ function renderizarTabla() {
                 <td>${hojasMostrar}</td>
                 <td>${tonerMostrar}</td>
             </tr>`;
-            
     } 
 } 
 
-
+// 3. Función auxiliar (Mover afuera para evitar errores)
 function traducirMes(mesClave) {
     const [year, month] = mesClave.split('-');
     const nombres = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
