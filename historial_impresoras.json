@@ -4,7 +4,7 @@
         "datos": {
             "Impresora 1": {
                 "ip": "10.25.5.19",
-                "Contador General": "ERROR",
+                "Contador General": 1172,
                 "Nivel de Tóner": "61%"
             },
             "Impresora 2": {
