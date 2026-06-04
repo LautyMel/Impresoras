@@ -110,12 +110,13 @@ def consultar_impresora_avanzado(printer, es_color=False):
             stdout=subprocess.PIPE, 
             stderr=subprocess.PIPE, 
             text=True, 
-            timeout=10, # Incrementado ligeramente por el barrido de colores
+            timeout=10, 
             creationflags=0x08000000  
         )
         if result.returncode == 0 and result.stdout.strip():
             partes = result.stdout.strip().split('|')
             if len(partes) == 5:
+                # CORRECCIÓN AQUÍ: Desempaquetar correctamente cada índice individual del arreglo
                 return partes[0], partes[1], partes[2], partes[3], partes[4]
         return "ERROR", "ERROR", "ERROR", "ERROR", "ERROR"
     except:
@@ -181,14 +182,12 @@ def ejecutar_escaneo():
         
         historial[mes_clave]["datos"][nombre_imp]["ip"] = ip_imp
             
-        # CONDICIÓN: Si es la Impresora 6 pasamos True para extraer los colores
         es_color = (nombre_imp == "Impresora 6")
         
-        # Llamada por red via SNMP modificada
         contador, t_black, t_cyan, t_magenta, t_yellow = consultar_impresora_avanzado(ip_imp, es_color)
         
         # Guardar Contador
-        if contador.isdigit():
+        if str(contador).isdigit():
             historial[mes_clave]["datos"][nombre_imp]["Contador General"] = int(contador)
         else:
             historial[mes_clave]["datos"][nombre_imp]["Contador General"] = "ERROR"
@@ -196,7 +195,6 @@ def ejecutar_escaneo():
         # Guardar Valores de Tóners organizados
         historial[mes_clave]["datos"][nombre_imp]["Porcentaje Tóner Negro"] = t_black
         
-        # Solo añadimos los nodos de color si es la impresora designada o si ya tenían datos previos
         if es_color:
             historial[mes_clave]["datos"][nombre_imp]["Porcentaje Tóner Cian"] = t_cyan
             historial[mes_clave]["datos"][nombre_imp]["Porcentaje Tóner Magenta"] = t_magenta
