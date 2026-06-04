@@ -33,15 +33,16 @@ IMPRESORAS = {
     "Impresora 3": "10.25.5.21",
     "Impresora 4": "10.25.5.22",
     "Impresora 5": "10.25.5.23",
-    "Impresora 6": "10.25.5.24",
+    "Impresora 6": "10.25.5.24",  # Impresora Color
     "Impresora 7": "10.209.34.69",
     "Impresora 8": "10.209.87.29",  
     "Impresora 9": "10.209.87.142"
-    }
-def consultar_impresora_avanzado(printer):
+}
+
+def consultar_impresora_avanzado(printer, es_color=False):
     """
     Ejecuta un script de PowerShell optimizado que extrae el contador general
-    y calcula de forma inteligente el porcentaje del tóner negro analizando los índices.
+    y calcula de forma inteligente el porcentaje de los tóners (Negro y Color si aplica).
     """
     ps_command = f"""
     $sys = New-Object -ComObject OlePrn.OleSNMP
@@ -51,38 +52,57 @@ def consultar_impresora_avanzado(printer):
         # 1. Obtener Contador
         try {{ $contador = $sys.Get(".1.3.6.1.2.1.43.10.2.1.4.1.1") }} catch {{ $contador = "ERROR" }}
         
-        # 2. Buscar índice del Tóner Negro (revisando los primeros 6 índices de descripción)
-        $idxToner = 1
-        for ($i = 1; $i -le 6; $i++) {{
+        # Diccionario para mapear índices encontrados
+        $indices = @{{ "black" = 0; "cyan" = 0; "magenta" = 0; "yellow" = 0 }}
+
+        # 2. Mapeo dinámico de índices de tóners (revisando los primeros 12 consumibles habituales)
+        for ($i = 1; $i -le 12; $i++) {{
             try {{
                 $desc = $sys.Get(".1.3.6.1.2.1.43.11.1.1.6.1.$i").ToLower()
-                if ($desc -like "*black*" -or $desc -like "*negro*") {{
-                    $idxToner = $i
-                    break
-                }}
+                if ($desc -like "*black*" -or $desc -like "*negro*") {{ $indices["black"] = $i }}
+                elseif ($desc -like "*cyan*" -or $desc -like "*cian*") {{ $indices["cyan"] = $i }}
+                elseif ($desc -like "*magenta*") {{ $indices["magenta"] = $i }}
+                elseif ($desc -like "*yellow*" -or $desc -like "*amarillo*") {{ $indices["yellow"] = $i }}
             }} catch {{}}
         }}
 
-        # 3. Obtener niveles con el índice detectado
-        try {{ $actual = [int]$sys.Get(".1.3.6.1.2.1.43.11.1.1.9.1.$idxToner") }} catch {{ $actual = -1 }}
-        try {{ $maximo = [int]$sys.Get(".1.3.6.1.2.1.43.11.1.1.8.1.$idxToner") }} catch {{ $maximo = -1 }}
-
-        # 4. Calcular porcentaje real
-        if ($actual -gt 0 -and $maximo -gt 0) {{
-            $porcentaje = [Math]::Round(($actual / $maximo) * 100)
-            $tonerResultado = "$porcentaje%"
-        }} elseif ($actual -eq -3) {{
-            $tonerResultado = "OK"
-        }} else {{
-            $tonerResultado = "ERROR"
+        # Función interna para calcular porcentaje por color
+        function Calcular-Toner($idx) {{
+            if ($idx -eq 0) {{ return "ERROR" }}
+            try {{
+                $actual = [int]$sys.Get(".1.3.6.1.2.1.43.11.1.1.9.1.$idx")
+                $maximo = [int]$sys.Get(".1.3.6.1.2.1.43.11.1.1.8.1.$idx")
+                if ($actual -gt 0 -and $maximo -gt 0) {{
+                    return "$([Math]::Round(($actual / $maximo) * 100))%"
+                }} elseif ($actual -eq -3) {{
+                    return "OK"
+                }} else {{
+                    return "ERROR"
+                }}
+            }} catch {{ return "ERROR" }}
         }}
+
+        # Calcular Negro siempre
+        $tBlack = Calcular-Toner($indices["black"])
+
+        # Calcular colores solo si el script de Python lo requiere explicitamente
+        if ("{es_color}" -eq "True") {{
+            $tCyan = Calcular-Toner($indices["cyan"])
+            $tMagenta = Calcular-Toner($indices["magenta"])
+            $tYellow = Calcular-Toner($indices["yellow"])
+        }} else {{
+            $tCyan = "N/A"
+            $tMagenta = "N/A"
+            $tYellow = "N/A"
+        }}
+
     }} catch {{
         $contador = "ERROR"
-        $tonerResultado = "ERROR"
+        $tBlack = "ERROR"; $tCyan = "ERROR"; $tMagenta = "ERROR"; $tYellow = "ERROR"
     }}
     
-    # Devolver formato limpio para procesar en Python
-    Write-Output "$contador|$tonerResultado"
+    # Devolver formato limpio estructurado para procesar en Python
+    Write-Output "$contador|$tBlack|$tCyan|$tMagenta|$tYellow"
     """
     try:
         result = subprocess.run(
@@ -90,16 +110,16 @@ def consultar_impresora_avanzado(printer):
             stdout=subprocess.PIPE, 
             stderr=subprocess.PIPE, 
             text=True, 
-            timeout=6,
+            timeout=10, # Incrementado ligeramente por el barrido de colores
             creationflags=0x08000000  
         )
         if result.returncode == 0 and result.stdout.strip():
             partes = result.stdout.strip().split('|')
-            if len(partes) == 2:
-                return partes[0], partes[1]
-        return "ERROR", "ERROR"
+            if len(partes) == 5:
+                return partes[0], partes[1], partes[2], partes[3], partes[4]
+        return "ERROR", "ERROR", "ERROR", "ERROR", "ERROR"
     except:
-        return "ERROR", "ERROR"
+        return "ERROR", "ERROR", "ERROR", "ERROR", "ERROR"
 
 def subir_a_github(contenido_json):
     if not GITHUB_TOKEN:
@@ -132,7 +152,6 @@ def ejecutar_escaneo():
     fecha_str = ahora.strftime("%Y-%m-%d %H:%M:%S")
     mes_clave = ahora.strftime("%Y-%m")
 
-    # Archivo local de historial
     archivo_datos_local = os.path.join(CARPETA_PROYECTO, "historial_impresoras.json")
 
     if os.path.exists(archivo_datos_local):
@@ -144,31 +163,29 @@ def ejecutar_escaneo():
     else:
         historial = {}
 
-    # Si cambia el mes, crea automáticamente la nueva sección
     if mes_clave not in historial:
         historial[mes_clave] = {"ultima_actualizacion": fecha_str, "datos": {}}
 
     historial[mes_clave]["ultima_actualizacion"] = fecha_str
 
-    # --- CORRECCIÓN AUTOMÁTICA DE IMPRESORAS ELIMINADAS ---
-    # Revisamos las impresoras del JSON para el mes actual y borramos las que ya no correspondan
     impresoras_en_json = list(historial[mes_clave]["datos"].keys())
     for nombre_guardado in impresoras_en_json:
         if nombre_guardado not in IMPRESORAS:
             del historial[mes_clave]["datos"][nombre_guardado]
-    # ------------------------------------------------------
 
     for nombre_imp, ip_imp in IMPRESORAS.items():
         print(f"Escaneando {nombre_imp} ({ip_imp})...")
         
-        # Aseguramos que la estructura interna mantenga la IP actualizada
         if nombre_imp not in historial[mes_clave]["datos"]:
             historial[mes_clave]["datos"][nombre_imp] = {}
         
         historial[mes_clave]["datos"][nombre_imp]["ip"] = ip_imp
             
-        # Llamada por red via SNMP
-        contador, toner = consultar_impresora_avanzado(ip_imp)
+        # CONDICIÓN: Si es la Impresora 6 pasamos True para extraer los colores
+        es_color = (nombre_imp == "Impresora 6")
+        
+        # Llamada por red via SNMP modificada
+        contador, t_black, t_cyan, t_magenta, t_yellow = consultar_impresora_avanzado(ip_imp, es_color)
         
         # Guardar Contador
         if contador.isdigit():
@@ -176,8 +193,14 @@ def ejecutar_escaneo():
         else:
             historial[mes_clave]["datos"][nombre_imp]["Contador General"] = "ERROR"
             
-        # Guardar Tóner
-        historial[mes_clave]["datos"][nombre_imp]["Porcentaje de Tóner"] = toner
+        # Guardar Valores de Tóners organizados
+        historial[mes_clave]["datos"][nombre_imp]["Porcentaje Tóner Negro"] = t_black
+        
+        # Solo añadimos los nodos de color si es la impresora designada o si ya tenían datos previos
+        if es_color:
+            historial[mes_clave]["datos"][nombre_imp]["Porcentaje Tóner Cian"] = t_cyan
+            historial[mes_clave]["datos"][nombre_imp]["Porcentaje Tóner Magenta"] = t_magenta
+            historial[mes_clave]["datos"][nombre_imp]["Porcentaje Tóner Amarillo"] = t_yellow
 
     json_final = json.dumps(historial, indent=4, ensure_ascii=False)
 
