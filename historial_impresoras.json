@@ -9,17 +9,17 @@
             },
             "Impresora 2": {
                 "ip": "10.25.5.20",
-                "Contador General": 1302,
+                "Contador General": 1297,
                 "Nivel de Tóner": "30%"
             },
             "Impresora 3": {
                 "ip": "10.25.5.21",
-                "Contador General": 750,
+                "Contador General": 745,
                 "Nivel de Tóner": "71%"
             },
             "Impresora 4": {
                 "ip": "10.25.5.22",
-                "Contador General": 614,
+                "Contador General": 609,
                 "Nivel de Tóner": "82%"
             },
             "Impresora 5": {
@@ -29,12 +29,12 @@
             },
             "Impresora 6": {
                 "ip": "10.25.5.24",
-                "Contador General": 160,
+                "Contador General": 148,
                 "Nivel de Tóner": "100%"
             },
             "Impresora 7": {
                 "ip": "10.209.34.69",
-                "Contador General": "ERROR",
+                "Contador General": "343",
                 "Nivel de Tóner": "ERROR"
             },
             "Impresora 8": {
