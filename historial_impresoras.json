@@ -84,6 +84,21 @@
                 "Porcentaje Tóner Cian": "100%",
                 "Porcentaje Tóner Magenta": "100%",
                 "Porcentaje Tóner Amarillo": "100%"
+            },,
+            "Impresora 7": {
+                "ip": "10.209.34.69",
+                "Contador General": "ERROR",
+                "Porcentaje Tóner Negro": "ERROR"
+            },
+            "Impresora 8": {
+                "ip": "10.209.87.29",
+                "Contador General": 445,
+                "Porcentaje Tóner Negro": "89%"
+            },
+            "Impresora 9": {
+                "ip": "10.209.87.142",
+                "Contador General": 835,
+                "Porcentaje Tóner Negro": "66%"
             }
         }
     }
