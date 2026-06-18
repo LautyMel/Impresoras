@@ -116,7 +116,7 @@ def consultar_impresora_avanzado(printer, es_color=False):
         if result.returncode == 0 and result.stdout.strip():
             partes = result.stdout.strip().split('|')
             if len(partes) == 5:
-                # CORRECCIÓN AQUÍ: Desempaquetar correctamente cada índice individual del arreglo
+                
                 return partes[0], partes[1], partes[2], partes[3], partes[4]
         return "ERROR", "ERROR", "ERROR", "ERROR", "ERROR"
     except:
