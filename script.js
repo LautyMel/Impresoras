@@ -5,9 +5,8 @@ const GITHUB_USER = "LautyMel";
 const GITHUB_REPO = "Impresoras";
 const urlJson = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/historial_impresoras.json`;
 
-// 🔒 DICCIONARIO ENCRIPTADO 
-const DATOS_PROTEGIDOS_HEX = "7b2231302e3230392e33342e3639223a7b22736563746f72223a225472616e73706f7274652f4c6f6769737469636120284265746f204669676c69616e6f29222c226469726563223a22417664612e204361737461c3b1617265732032333531227d2c2231302e3230392e38372e3239223a7b22736563746f72223a224f6669632e205465636e69636120284665726e616e646f20416c626172726163696e29222c226469726563223a22417664612e204361737461c3b1617265732032333530227d2c2231302e3230392e38372e313432223a7b22736563746f72223a22476572656e63696120284c7569732047526f736d616e29222c226469726563223a22417664612e204361737461c3b1617265732032333530227d2c2231302e32352e352e3234223a7b22736563746f72223a224469722e204772616c2e222c226469726563223a22417664612e20496e646570656e64656e6369612033323737227d2c2231302e32352e352e3233223a7b22736563746f72223a224f6669632e20333135222c226469726563223a22417664612e20496e646570656e64656e6369612033323737227d2c2231302e32352e352e3232223a7b22736563746f72223a2241756469746f726961222c226469726563223a22417664612e20496e646570656e64656e6369612033323737227d2c2231302e32352e352e3231223a7b22736563746f72223a225042222c226469726563223a22417664612e20496e646570656e64656e6369612033323737227d2c2231302e32352e352e3230223a7b22736563746f72223a224f6669632e2032303820534547554e444f205049534f222c226469726563223a22417664612e20496e646570656e64656e6369612033323737227d2c2231302e32352e352e3139223a7b22736563746f72223a225052494d4552205049534f20414c20464f4e444f222c226469726563223a22417664612e20496e646570656e64656e6369612033323737227d7d";
-
+// 🔒 DICCIONARIO 
+const DATOS_PROTEGIDOS_HEX = "306d024610115e510808544e45544d18554c0e0b4012025211515252080f4a13535f4b591d575c5f4c520a0640101b0f5b400705421d4d0e515d4d5d045d414a515f405c1451515f4c530e0640101b0f5b400705421d4d0e515d4d5d045d414a515f425c0e4d025141505c080f4a13535f4b591d575c5f4c520302401015024b400506145340154044024c0d024c521157470f1a4e504c10174003024540060d1544401c4044024c0e024c521157470f1a4e504c10174003024540060d1544401c4046034c03034c56125045051a425340154044024c0f024c521157470f1a4e504c10174003024540060d1544401c404d024c405541014c00034c52125145051a425340154044024c10024c521157470f1a4e504c10174003024540060d1544401c4046034c03405d4304441544401c404b01004c01034c52125645051a425340154044024c11024c521157470f1a4e504c10174003024540060d1544401c40584b4249495b5e404b4d53474d4149574d53453b";
 // 1. Cargar el JSON dinámico saltando la cache del navegador
 fetch(`${urlJson}?t=${new Date().getTime()}`)
     .then(response => {
@@ -129,13 +128,13 @@ function traducirMes(mesClave) {
     return `${nombres[parseInt(month) - 1]} ${year}`;
 }
 
-// 🔒 FUNCIÓN CRIPTOGRÁFICA CORREGIDA (Soporta codificación limpia sin romper JSON)
+// 🔒 FUNCIÓN CRIPTOGRÁFICA SEGURA: Descifra usando la clave ingresada como máscara XOR
 function obtenerDiccionarioDescifrado(clave) {
     if (!clave) return null;
     try {
         let str = "";
         for (let i = 0; i < DATOS_PROTEGIDOS_HEX.length; i += 2) {
-            let byte = parseInt(DATOS_PROTEGIDOS_HEX.substring(i, i + 2), 16);
+            let byte = parseInt(DATOS_PROTEGIDOS_HEX.substr(i, 2), 16);
             let charClave = clave.charCodeAt((i / 2) % clave.length);
             str += String.fromCharCode(byte ^ charClave); 
         }
@@ -145,13 +144,23 @@ function obtenerDiccionarioDescifrado(clave) {
     }
 }
 
-// 4. FUNCIÓN EXCEL HISTÓRICA GENERAL
 function descargarExcelMensual() {
     const claveIngresada = prompt("🔒 Ingrese la contraseña para incluir Direcciones y Sectores privados:");
     
-    // Convertir entrada a minúsculas automáticamente para evitar fallos por shift/capslock
+    // Forzamos minúsculas para que coincida perfectamente con el HEX generado
     const claveFormateada = claveIngresada ? claveIngresada.toLowerCase() : null;
+    
+    // Usamos la clave formateada aquí
     const diccionarioDirecciones = obtenerDiccionarioDescifrado(claveFormateada);
+
+    if (claveIngresada !== null && !diccionarioDirecciones) {
+        alert("⚠️ Contraseña incorrecta. El reporte se descargará con las celdas de ubicación ocultas por seguridad.");
+    }
+
+// 4. FUNCIÓN EXCEL HISTÓRICA GENERAL
+function descargarExcelMensual() {
+    const claveIngresada = prompt("🔒 Ingrese la contraseña para incluir Direcciones y Sectores privados:");
+    const diccionarioDirecciones = obtenerDiccionarioDescifrado(claveIngresada);
 
     if (claveIngresada !== null && !diccionarioDirecciones) {
         alert("⚠️ Contraseña incorrecta. El reporte se descargará con las celdas de ubicación ocultas por seguridad.");
