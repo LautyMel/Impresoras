@@ -2,17 +2,18 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reporte de Consumo Mensual</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <script src="script.js"></script>
+    <script src="script.js" defer></script>
 </head>
 <body>
     <div class="container">
         <h1>IMPRESORAS EMUI</h1>
         <div class="sub" id="actualizacion">Cargando datos desde GitHub...</div>
         
-        <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+        <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
             <label for="selector-mes"><strong>Seleccionar Mes a Analizar: </strong></label>
             <select id="selector-mes" onchange="renderizarTabla()"></select>
             
@@ -27,12 +28,11 @@
                     <th>Impresora</th>
                     <th>Dirección IP</th>
                     <th>Hojas Impresas (Este Mes)</th>
-                    <th>Porcentaje de Tóner</th>
                 </tr>
             </thead>
             <tbody id="tabla-cuerpo">
                 <tr>
-                    <td colspan="4" style="text-align: center; color: #7f8c8d;">Buscando registros...</td>
+                    <td colspan="3" style="text-align: center; color: #7f8c8d;">Buscando registros...</td>
                 </tr>
             </tbody>
         </table>
