@@ -5,8 +5,8 @@ const GITHUB_USER = "LautyMel";
 const GITHUB_REPO = "Impresoras";
 const urlJson = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/historial_impresoras.json`;
 
-// 🔒 DICCIONARIO CIFRADO SEGURO (La contraseña EMUI2026 es la llave matemática, no está escrita aquí)
-const DATOS_PROTEGIDOS_HEX = "306d6b63303c733324637d7a3120616f73756b78292c6e64627d70657e286377757b326330366b303c70332463767e6e30207d6164746f63292461627c7a76637e284063777532303061353c70332463717e6a3120616f73756b7829246e636b63697e68285a7375616e6d6333303062323c71332463727e693120616f73756b78292c6e64627d70657e284263706b72646c244365636433303062313c71332463737e683120616f73756b78292c6e64627d70657e284963776d6333333033303062303c713324637c7e6f3120616f73756b78292c6e64627d70657e284373626f7c6d656f6333303062373c713324637d7e6e3120616f73756b78292c6e64627d70657e285a4433303062363c713324637e7e6d3120616f73756b78292c6e64627d70657e284963776d6333333130245543415348424924524f5b4d33303062353c713324637f7e6c3120616f73756b78292c6e64627d70657e28565a4f4b435424564f534724434a24404748444f3b";
+// 🔒 DICCIONARIO RE-CIFRADO CORRECTAMENTE PARA "EMUI2026"
+const DATOS_PROTEGIDOS_HEX = "4e1a06144e4b0c44561400034e5716184102140f5a5b1113110007130c5f1400024e4414434e441b434e4b03405614010119435710161453530616130353521315150c0d1b545453001c56140002314e4413444e4b0c42561406011d4e57161f43530616130353521613110200545f1b3d5c5210131411130d414e4411474e4b0c43561407011c4e57161e43530616130353521613110d105454153042520616131d1b111e14414e4410464e4b0c40561404011f4e57161d4353061613035352111c151c05545413331c594c42404e4e1a141d1a1b414e4417414e4b0c41561405011e4e57161c4353061613035352111c151c05545413341b5247414e1a11121d1b414e4416404e4b0c4656140201194e5716134353061613035352111c151c05545416321255474643444e1a12151d1b414e4415434e4b0c4756140301184e5716124353061613035352111c151c0554541135404e1a111a1d1b414e4414424e4b0c44561400011b4e5716114353061613035352111c151c0554541030135842405c4943485c571e16101c414e441b454e4b0c45561401011a4e5716104353061613035352111c151c05545417311157554e4a42525c571616171d5303494a5e4c414c464e1a";
 
 // 1. Cargar el JSON dinámico saltando la cache del navegador
 fetch(`${urlJson}?t=${new Date().getTime()}`)
@@ -73,12 +73,12 @@ function renderizarTabla() {
 
     document.getElementById('actualizacion').innerText = `Última lectura de este mes: ${datosHistorial[mesSeleccionado].ultima_actualizacion}`;
 
-    const [year, month] = mesSeleccionado.split('-').map(Number);
-    const fechaMesAnterior = new Date(year, month - 2, 1);
-    const mesAnteriorClave = fechaMesAnterior.getFullYear() + "-" + String(fechaMesAnterior.getMonth() + 1).padStart(2, '0');
+    const listaMeses = Object.keys(datosHistorial).sort();
+    const posicionActual = listaMeses.indexOf(mesSeleccionado);
+    const mesAnteriorClave = posicionActual > 0 ? listaMeses[posicionActual - 1] : null;
 
     const datosActuales = datosHistorial[mesSeleccionado].datos;
-    const datosAnteriores = datosHistorial[mesAnteriorClave] ? datosHistorial[mesAnteriorClave].datos : null;
+    const datosAnteriores = mesAnteriorClave ? datosHistorial[mesAnteriorClave].datos : null;
 
     for (const [nombreImp, info] of Object.entries(datosActuales)) {
         let hojasMostrar = `<span class="sin-datos">0 hojas</span>`;
@@ -123,12 +123,13 @@ function renderizarTabla() {
 
 // 3. Función auxiliar para nombres de meses
 function traducirMes(mesClave) {
+    if (!mesClave || !mesClave.includes('-')) return mesClave;
     const [year, month] = mesClave.split('-');
     const nombres = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
     return `${nombres[parseInt(month) - 1]} ${year}`;
 }
 
-// 🔒 FUNCIÓN CRIPTOGRÁFICA SEGURA: La contraseña ingresada intenta descifrar matemáticamente los datos.
+// 🔒 FUNCIÓN CRIPTOGRÁFICA SEGURA: La contraseña ingresada descifra matemáticamente la nueva cadena HEX
 function obtenerDiccionarioDescifrado(clave) {
     if (!clave) return null;
     try {
@@ -138,13 +139,13 @@ function obtenerDiccionarioDescifrado(clave) {
             let charClave = clave.charCodeAt((i / 2) % clave.length);
             str += String.fromCharCode(byte ^ charClave); 
         }
-        return JSON.parse(str); // Si la clave es errónea, esto romperá y saltará al catch.
+        return JSON.parse(str); 
     } catch (e) {
         return null;
     }
 }
 
-// 4. FUNCIÓN EXCEL HISTÓRICA GENERAL (Muestra todos los meses del historial en columnas hacia la derecha)
+// 4. FUNCIÓN EXCEL HISTÓRICA GENERAL
 function descargarExcelMensual() {
     const claveIngresada = prompt("🔒 Ingrese la contraseña para incluir Direcciones y Sectores privados:");
     const diccionarioDirecciones = obtenerDiccionarioDescifrado(claveIngresada);
@@ -153,14 +154,12 @@ function descargarExcelMensual() {
         alert("⚠️ Contraseña incorrecta. El reporte se descargará con las celdas de ubicación ocultas por seguridad.");
     }
 
-    // Obtener todos los meses disponibles y ordenarlos cronológicamente (antiguo a reciente)
     const listaMeses = Object.keys(datosHistorial).sort(); 
     if (listaMeses.length === 0) {
         alert("No hay datos disponibles para exportar.");
         return;
     }
 
-    // Construir la fila de encabezados dinámicos basándose en los meses que existan en el JSON
     const encabezados = ["Impresora", "Dirección IP", "Ubicación / Sector", "Dirección Física"];
     listaMeses.forEach(mesClave => {
         encabezados.push(`Hojas (${traducirMes(mesClave)})`);
@@ -173,7 +172,6 @@ function descargarExcelMensual() {
         encabezados
     ];
 
-    // Obtener un Set único con todas las impresoras del historial global
     const todasLasImpresoras = new Set();
     listaMeses.forEach(mes => {
         if (datosHistorial[mes] && datosHistorial[mes].datos) {
@@ -181,7 +179,6 @@ function descargarExcelMensual() {
         }
     });
 
-    // Procesar los datos de cada impresora mes por mes
     for (const nombreImp of todasLasImpresoras) {
         let ipImpresora = "";
         for (let i = listaMeses.length - 1; i >= 0; i--) {
@@ -203,13 +200,12 @@ function descargarExcelMensual() {
             datosExtra.direc
         ];
 
-        // Calcular consumos individuales para cada mes respectivo de la línea de tiempo
         listaMeses.forEach((mesSeleccionado) => {
             const datosActuales = datosHistorial[mesSeleccionado]?.datos;
             const info = datosActuales ? datosActuales[nombreImp] : null;
 
             if (!info) {
-                filaImpresora.push("-"); // No registrada en este mes
+                filaImpresora.push("-"); 
                 return;
             }
 
@@ -218,10 +214,9 @@ function descargarExcelMensual() {
             if (valorContadorActual === "ERROR" || valorContadorActual === undefined) {
                 filaImpresora.push("OFFLINE");
             } else {
-                const [year, month] = mesSeleccionado.split('-').map(Number);
-                const fechaMesAnterior = new Date(year, month - 2, 1);
-                const mesAnteriorClave = fechaMesAnterior.getFullYear() + "-" + String(fechaMesAnterior.getMonth() + 1).padStart(2, '0');
-                const datosAnteriores = datosHistorial[mesAnteriorClave]?.datos;
+                const posicionActual = listaMeses.indexOf(mesSeleccionado);
+                const mesAnteriorClave = posicionActual > 0 ? listaMeses[posicionActual - 1] : null;
+                const datosAnteriores = mesAnteriorClave ? datosHistorial[mesAnteriorClave]?.datos : null;
 
                 if (datosAnteriores && datosAnteriores[nombreImp] && datosAnteriores[nombreImp]["Contador General"]) {
                     const valorContadorAnterior = datosAnteriores[nombreImp]["Contador General"];
@@ -239,13 +234,11 @@ function descargarExcelMensual() {
         filasExcel.push(filaImpresora);
     }
 
-    // Compilación final del documento XLSX
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.aoa_to_sheet(filasExcel);
 
     ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: encabezados.length - 1 } }];
 
-    // Asignar el renderizado de millares numéricos (#,##0) a todas las celdas de las columnas de meses
     for (let r = 4; r < filasExcel.length; r++) {
         for (let c = 4; c < encabezados.length; c++) {
             const cellRef = XLSX.utils.encode_cell({ r: r, c: c });
