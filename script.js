@@ -26,7 +26,7 @@ fetch(`${urlJson}?t=${new Date().getTime()}`)
         meses.forEach(mes => {
             const opt = document.createElement('option');
             opt.value = mes;
-            opt.innerText = traducirMes(mes);
+            opt.innerText = traducirMes(mes); // Corregido para que coincida
             selector.appendChild(opt);
         });
 
@@ -124,14 +124,14 @@ function renderizarTabla() {
     } 
 } 
 
-// 3. Función auxiliar para traducción de meses
-function traduceMes(mesClave) {
+// 3. Función auxiliar para traducción de meses (CORREGIDO EL NOMBRE AQUÍ)
+function traducirMes(mesClave) {
     const [year, month] = mesClave.split('-');
     const nombres = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
     return `${nombres[parseInt(month) - 1]} ${year}`;
 }
 
-// 4. NUEVA FUNCIÓN: Generar y descargar el reporte mensual en formato Excel (.xlsx)
+// 4. Generar y descargar el reporte mensual en formato Excel (.xlsx)
 function descargarExcelMensual() {
     const selector = document.getElementById('selector-mes');
     if (!selector || !selector.value) {
@@ -198,11 +198,11 @@ function descargarExcelMensual() {
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.aoa_to_sheet(filasExcel);
 
-    // Ajustar anchos automáticos
+    // Ajustar anchos automáticos (CORREGIDO DE 'wth' A 'wch')
     const maxAnchos = filasExcel[3].map((_, colIdx) => {
         return Math.max(...filasExcel.map(row => row[colIdx] ? row[colIdx].toString().length : 0)) + 3;
     });
-    ws['!cols'] = maxAnchos.map(w => ({ wth: w }));
+    ws['!cols'] = maxAnchos.map(w => ({ wch: w }));
 
     // Combinar fila de título (A1:G1)
     ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 6 } }];
