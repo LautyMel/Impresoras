@@ -2,25 +2,17 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reporte de Consumo Mensual</title>
-    <link class="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <script src="script.js" defer></script>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js"></script>
 </head>
 <body>
     <div class="container">
         <h1>IMPRESORAS EMUI</h1>
         <div class="sub" id="actualizacion">Cargando datos desde GitHub...</div>
         
-        <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-            <label for="selector-mes"><strong>Seleccionar Mes a Analizar: </strong></label>
-            <select id="selector-mes" onchange="renderizarTabla()"></select>
-            
-            <button id="btn-excel" onclick="descargarExcelMensual()" style="padding: 6px 15px; cursor: pointer; font-weight: bold; background-color: #27ae60; color: white; border: none; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                📊 Descargar Excel
-            </button>
-        </div>
+        <label for="selector-mes"><strong>Seleccionar Mes a Analizar: </strong></label>
+        <select id="selector-mes" onchange="renderizarTabla()"></select>
 
         <table>
             <thead>
@@ -38,5 +30,7 @@
             </tbody>
         </table>
     </div>
+
+  
 </body>
 </html>
