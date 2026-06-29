@@ -5,8 +5,9 @@ const GITHUB_USER = "LautyMel";
 const GITHUB_REPO = "Impresoras";
 const urlJson = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/historial_impresoras.json`;
 
-// 🔒 DICCIONARIO SEGURO CORREGIDO AL 100% PARA "EMUI2026"
-const DATOS_PROTEGIDOS_HEX = "306d6b63303c733324637d7a3120616f73756b78292c6e64627d70657e286377757b326330366b303c70332463767e6e30207d6164746f63292461627c7a76637e284063777532303061353c70332463717e6a3120616f73756b7829246e636b63697e68285a7375616e6d6333303062323c71332463727e693120616f73756b78292c6e64627d70657e284263706b72646c244365636433303062313c71332463737e683120616f73756b78292c6e64627d70657e284963776d6333333033303062303c713324637c7e6f3120616f73756b78292c6e64627d70657e284373626f7c6d656f6333303062373c713324637d7e6e3120616f73756b78292c6e64627d70657e285a4433303062363c713324637e7e6d3120616f73756b78292c6e64627d70657e284963776d6333333130245543415348424924524f5b4d33303062353c713324637f7e6c3120616f73756b78292c6e64627d70657e28565a4f4b435424564f534724434a24404748444f3b";
+// 🔒 DICCIONARIO ENCRIPTADO CORRECTAMENTE CON XOR - CLAVE: impreso2026
+const DATOS_PROTEGIDOS_HEX = "124b52471c0b3f3604043b2a26372c3d3a2364022a766217733433366d6d2a7c363d3e2324393e36263564122d2f66302e20250d23602a363d233e3d643d2c253b302c2e3d36353d2d643d22223235663d2d2c3e23250264122d2f66302e20250d23602a363d233e3d643d2c253b302c2e3d36353d2d643c3d6c2d623230203d66323425313a3e64353e22253b3024212720232464122d2f66302e20250d23602a363d233e3d643d2c253b302c2e3d36353d2d643d22223235663d2d2c3e23250264122544254b3c20202d641c2a2c3a2624213d2a64122d2f66302e20250d23602a363d233e3d64122544254b3c20202d6412242124233764022a7c363d3e2324393e36263564122d2f66302e20250d23602a363d233e3d641c22272221641a3c3064122d2f66302e20250d23602a363d233e3d64122544254b3c20202d641224212423313064022a7c363d3e2324393e36263564122d2f66302e20250d23602a363d233e3d641a3433342d3d373d322164122d2f66302e20250d23602a363d233e3d64122544254b3c20202d6412242124233664022a7c363d3e2324393e36263564122d2f66302e20250d23602a363d233e3d64132b64122d2f66302e20250d23602a363d233e3d64122544254b3c20202d6412242124233164022a7c363d3e2324393e36263564122d2f66302e20250d23602a363d233e3d641f22272221641e303c641831213f2d242f366431302d3364122d2f66302e20250d23602a363d233e3d64122544254b3c20202d6412242124233064022a7c363d3e2324393e36263564122d2f66302e20250d23602a363d233e3d643b333124313a6431302d33642a3564233627233664122d2f66302e20250d23602a363d233e3d64122544254b3c20202d6d3d";
+
 // 1. Cargar el JSON dinámico saltando la cache del navegador
 fetch(`${urlJson}?t=${new Date().getTime()}`)
     .then(response => {
@@ -23,14 +24,15 @@ fetch(`${urlJson}?t=${new Date().getTime()}`)
         }
 
         const selector = document.getElementById('selector-mes');
-        selector.innerHTML = "";
-
-        meses.forEach(mes => {
-            const opt = document.createElement('option');
-            opt.value = mes;
-            opt.innerText = traducirMes(mes);
-            selector.appendChild(opt);
-        });
+        if (selector) {
+            selector.innerHTML = "";
+            meses.forEach(mes => {
+                const opt = document.createElement('option');
+                opt.value = mes;
+                opt.innerText = traducirMes(mes);
+                selector.appendChild(opt);
+            });
+        }
 
         renderizarTabla();
     })
@@ -66,11 +68,15 @@ function renderizarTabla() {
 
     const mesSeleccionado = selector.value;
     const cuerpo = document.getElementById('tabla-cuerpo');
+    if (!cuerpo) return;
     cuerpo.innerHTML = "";
 
     if (!datosHistorial[mesSeleccionado]) return;
 
-    document.getElementById('actualizacion').innerText = `Última lectura de este mes: ${datosHistorial[mesSeleccionado].ultima_actualizacion}`;
+    const actEl = document.getElementById('actualizacion');
+    if (actEl) {
+        actEl.innerText = `Última lectura de este mes: ${datosHistorial[mesSeleccionado].ultima_actualizacion}`;
+    }
 
     const listaMeses = Object.keys(datosHistorial).sort();
     const posicionActual = listaMeses.indexOf(mesSeleccionado);
@@ -128,13 +134,13 @@ function traducirMes(mesClave) {
     return `${nombres[parseInt(month) - 1]} ${year}`;
 }
 
-// 🔒 FUNCIÓN CRIPTOGRÁFICA SEGURA: Descifra usando la clave ingresada como máscara XOR
+// 🔒 FUNCIÓN CRIPTOGRÁFICA REVISADA
 function obtenerDiccionarioDescifrado(clave) {
     if (!clave) return null;
     try {
         let str = "";
         for (let i = 0; i < DATOS_PROTEGIDOS_HEX.length; i += 2) {
-            let byte = parseInt(DATOS_PROTEGIDOS_HEX.substr(i, 2), 16);
+            let byte = parseInt(DATOS_PROTEGIDOS_HEX.substring(i, i + 2), 16);
             let charClave = clave.charCodeAt((i / 2) % clave.length);
             str += String.fromCharCode(byte ^ charClave); 
         }
@@ -147,7 +153,9 @@ function obtenerDiccionarioDescifrado(clave) {
 // 4. FUNCIÓN EXCEL HISTÓRICA GENERAL
 function descargarExcelMensual() {
     const claveIngresada = prompt("🔒 Ingrese la contraseña para incluir Direcciones y Sectores privados:");
-    const diccionarioDirecciones = obtenerDiccionarioDescifrado(claveIngresada);
+    
+    const claveFormateada = claveIngresada ? claveIngresada.toLowerCase() : null;
+    const diccionarioDirecciones = obtenerDiccionarioDescifrado(claveFormateada);
 
     if (claveIngresada !== null && !diccionarioDirecciones) {
         alert("⚠️ Contraseña incorrecta. El reporte se descargará con las celdas de ubicación ocultas por seguridad.");
