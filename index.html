@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Reporte de Consumo Mensual</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="script.js"></script>
 </head>
 <body>
@@ -11,8 +12,14 @@
         <h1>IMPRESORAS EMUI</h1>
         <div class="sub" id="actualizacion">Cargando datos desde GitHub...</div>
         
-        <label for="selector-mes"><strong>Seleccionar Mes a Analizar: </strong></label>
-        <select id="selector-mes" onchange="renderizarTabla()"></select>
+        <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <label for="selector-mes"><strong>Seleccionar Mes a Analizar: </strong></label>
+            <select id="selector-mes" onchange="renderizarTabla()"></select>
+            
+            <button id="btn-excel" onclick="descargarExcelMensual()" style="padding: 6px 15px; cursor: pointer; font-weight: bold; background-color: #27ae60; color: white; border: none; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                📊 Descargar Excel
+            </button>
+        </div>
 
         <table>
             <thead>
@@ -30,7 +37,5 @@
             </tbody>
         </table>
     </div>
-
-  
 </body>
 </html>
