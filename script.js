@@ -6,7 +6,7 @@ const GITHUB_REPO = "Impresoras";
 const urlJson = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/historial_impresoras.json`;
 
 // 🔒 DICCIONARIO 
-const DATOS_PROTEGIDOS_HEX = "4e1a06144e4b0c44561400034e5716184102140f5a5b1113110007130c5f1400024e4414434e441b434e4b03405614010119435710161453530616130353521315150c0d1b545453001c56140002314e4413444e4b0c42561406011d4e57161f43530616130353521613110200545f1b3d5c5210131411130d414e4411474e4b0c43561407011c4e57161e43530616130353521613110d105454153042520616131d1b111e14414e4410464e4b0c40561404011f4e57161d4353061613035352121d101d05545413331c594c42404e4e1a141d1a1b414e4417414e4b0c41561405011e4e57161c4353061613035352121d101d05545413341b5247414e1a11121d1b414e4416404e4b0c4656140201194e5716134353061613035352121d101d05545416321255474643444e1a12151d1b414e4415434e4b0c4756140301184e5716124353061613035352121d101d0554541135404e1a111a1d1b414e4414424e4b0c44561400011b4e5716114353061613035352121d101d0554541030135842405c4943485c571e16101c414e441b454e4b0c45561401011a4e5716104353061613035352121d101d05545417311157554e4a42525c571616171d5303494a5e4c414c464e1a";
+const DATOS_PROTEGIDOS_HEX = "4e1a06144e4b0c44561400034e5716184102140f5a5b1113110007130c5f1400024e4414434e441b434e4b03405614010119435710161453530616130353521315150c0d1b545453001c56140002314e4413444e4b0c42561406011d4e57161f4353061613035352131411130d545f1b3d5c5210131411130d414e4411474e4b0c43561407011c4e57161e4353061613035352131411130d5454153042520616131d1b111e14414e4410464e4b0c40561404011f4e57161d4353061613035352111c151c05545413331c594c42404e4e1a141d1a1b414e4417414e4b0c41561405011e4e57161c4353061613035352111c151c05545413341b5247414e1a11121d1b414e4416404e4b0c4656140201194e5716134353061613035352111c151c05545416321255474643444e1a12151d1b414e4415434e4b0c4756140301184e5716124353061613035352111c151c0554541135404e1a111a1d1b414e4414424e4b0c44561400011b4e5716114353061613035352111c151c0554541030135842405c4943485c571e16101c414e441b454e4b0c45561401011a4e5716104353061613035352111c151c05545417311157554e4a42525c571616171d5303494a5e4c414c464e1a";
 
 // 1. Cargar el JSON dinámico saltando la cache del navegador
 fetch(`${urlJson}?t=${new Date().getTime()}`)
@@ -129,7 +129,7 @@ function traducirMes(mesClave) {
     return `${nombres[parseInt(month) - 1]} ${year}`;
 }
 
-// 🔒 FUNCIÓN CRIPTOGRÁFICA SEGURA: La contraseña ingresada descifra matemáticamente la nueva cadena HEX
+// 🔒 FUNCIÓN CRIPTOGRÁFICA SEGURA: La contraseña ingresada intenta descifrar matemáticamente los datos.
 function obtenerDiccionarioDescifrado(clave) {
     if (!clave) return null;
     try {
@@ -139,7 +139,7 @@ function obtenerDiccionarioDescifrado(clave) {
             let charClave = clave.charCodeAt((i / 2) % clave.length);
             str += String.fromCharCode(byte ^ charClave); 
         }
-        return JSON.parse(str); 
+        return JSON.parse(str); // Si la clave es correcta, devuelve el objeto. Si no, rompe y va al catch.
     } catch (e) {
         return null;
     }
@@ -154,6 +154,7 @@ function descargarExcelMensual() {
         alert("⚠️ Contraseña incorrecta. El reporte se descargará con las celdas de ubicación ocultas por seguridad.");
     }
 
+    // Obtener todos los meses disponibles y ordenarlos cronológicamente (antiguo a reciente)
     const listaMeses = Object.keys(datosHistorial).sort(); 
     if (listaMeses.length === 0) {
         alert("No hay datos disponibles para exportar.");
@@ -189,8 +190,15 @@ function descargarExcelMensual() {
         }
 
         let datosExtra = { direc: "[Acceso Protegido]", sector: "[Acceso Protegido]" };
+        
         if (diccionarioDirecciones) {
-            datosExtra = diccionarioDirecciones[ipImpresora] || { direc: "Sin Dirección", sector: "Sin Sector" };
+            let infoDirec = diccionarioDirecciones[ipImpresora] || { direc: "Sin Dirección", sector: "Sin Sector" };
+            
+            // Reemplazo en caliente para asegurar que se muestre la "Ñ" de Castañares correctamente en el Excel
+            datosExtra = {
+                direc: infoDirec.direc.replace("Castanares", "Castañares"),
+                sector: infoDirec.sector.replace("Castanares", "Castañares")
+            };
         }
 
         const filaImpresora = [
