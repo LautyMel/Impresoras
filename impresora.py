@@ -7,7 +7,6 @@ from datetime import datetime
 from github import Github  # Librería PyGithub
 
 # ==================== CONFIGURACIÓN ====================
-
 CARPETA_PROYECTO = os.path.dirname(os.path.abspath(__file__))
 
 # Configuración del Repositorio de GitHub
@@ -42,7 +41,7 @@ IMPRESORAS = {
 def consultar_impresora_avanzado(printer, es_color=False):
     """
     Ejecuta un script de PowerShell optimizado que extrae el contador general
-    y calcula de forma inteligente el porcentaje de los tóners (Negro y Color si aplica).
+    y calcula de forma inteligente el porcentaje de los tóners.
     """
     ps_command = f"""
     $sys = New-Object -ComObject OlePrn.OleSNMP
@@ -55,7 +54,7 @@ def consultar_impresora_avanzado(printer, es_color=False):
         # Diccionario para mapear índices encontrados
         $indices = @{{ "black" = 0; "cyan" = 0; "magenta" = 0; "yellow" = 0 }}
 
-        # 2. Mapeo dinámico de índices de tóners (revisando los primeros 12 consumibles habituales)
+        # 2. Mapeo dinámico de índices de tóners
         for ($i = 1; $i -le 12; $i++) {{
             try {{
                 $desc = $sys.Get(".1.3.6.1.2.1.43.11.1.1.6.1.$i").ToLower()
@@ -82,10 +81,8 @@ def consultar_impresora_avanzado(printer, es_color=False):
             }} catch {{ return "ERROR" }}
         }}
 
-        # Calcular Negro siempre
         $tBlack = Calcular-Toner($indices["black"])
 
-        # Calcular colores solo si el script de Python lo requiere explicitamente
         if ("{es_color}" -eq "True") {{
             $tCyan = Calcular-Toner($indices["cyan"])
             $tMagenta = Calcular-Toner($indices["magenta"])
@@ -101,7 +98,6 @@ def consultar_impresora_avanzado(printer, es_color=False):
         $tBlack = "ERROR"; $tCyan = "ERROR"; $tMagenta = "ERROR"; $tYellow = "ERROR"
     }}
     
-    # Devolver formato limpio estructurado para procesar en Python
     Write-Output "$contador|$tBlack|$tCyan|$tMagenta|$tYellow"
     """
     try:
@@ -116,11 +112,11 @@ def consultar_impresora_avanzado(printer, es_color=False):
         if result.returncode == 0 and result.stdout.strip():
             partes = result.stdout.strip().split('|')
             if len(partes) == 5:
-                
                 return partes[0], partes[1], partes[2], partes[3], partes[4]
         return "ERROR", "ERROR", "ERROR", "ERROR", "ERROR"
     except:
         return "ERROR", "ERROR", "ERROR", "ERROR", "ERROR"
+
 
 def subir_a_github(contenido_json):
     if not GITHUB_TOKEN:
@@ -147,6 +143,7 @@ def subir_a_github(contenido_json):
             print(" -> [GitHub] Archivo creado por primera vez en la nube.")
     except Exception as e:
         print(f" -> [GitHub] ERROR al subir los datos: {e}")
+
 
 def ejecutar_escaneo():
     ahora = datetime.now()
@@ -186,13 +183,11 @@ def ejecutar_escaneo():
         
         contador, t_black, t_cyan, t_magenta, t_yellow = consultar_impresora_avanzado(ip_imp, es_color)
         
-        # Guardar Contador
         if str(contador).isdigit():
             historial[mes_clave]["datos"][nombre_imp]["Contador General"] = int(contador)
         else:
             historial[mes_clave]["datos"][nombre_imp]["Contador General"] = "ERROR"
             
-        # Guardar Valores de Tóners organizados
         historial[mes_clave]["datos"][nombre_imp]["Porcentaje Tóner Negro"] = t_black
         
         if es_color:
@@ -207,6 +202,7 @@ def ejecutar_escaneo():
     print(f"[{fecha_str}] Historial guardado localmente.")
 
     subir_a_github(json_final)
+
 
 if __name__ == "__main__":
     if not os.path.exists(CARPETA_PROYECTO):
