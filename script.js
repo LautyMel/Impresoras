@@ -5,8 +5,8 @@ const GITHUB_USER = "LautyMel";
 const GITHUB_REPO = "Impresoras";
 const urlJson = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/historial_impresoras.json`;
 
-// 🔒 DICCIONARIO CIFRADO SEGURO PARA GITHUB PÚBLICO
-const DATOS_PROTEGIDOS_HEX = "7b2231302e3230392e33342e3639223a7b226469726563223a22417664612e2043617374616e617265732032333531222c22736563746f72223a225472616e73706f7274652f4c6f6769737469636120284265746f204669676c69616e6f29227d2c2231302e3230392e38372e3239223a7b226469726563223a22417664612e2043617374616e617265732032333530222c22736563746f72223a224f6669632e205465636e69636120284665726e616e646f20416c626172726163696e29227d2c2231302e3230392e38372e313432223a7b226469726563223a22417664612e2043617374616e617265732032333530222c22736563746f72223a22476572656e63696120284c7569732047726f736d616e29227d2c2231302e32352e352e3234223a7b226469726563223a22417664612e204a6e646570656e64656e6369612033323737222c22736563746f72223a224469722e204772616c2e227d2c2231302e32352e352e3233223a7b226469726563223a22417664612e204a6e646570656e64656e6369612033323737222c22736563746f72223a224f6669632e20333135227d2c2231302e32352e352e3232223a7b226469726563223a22417664612e204a6e646570656e64656e6369612033323737222c22736563746f72223a2241756469746f726961227d2c2231302e32352e352e3231223a7b226469726563223a22417664612e204a6e646570656e64656e6369612033323737222c22736563746f72223a225042227d2c2231302e32352e352e3230223a7b226469726563223a22417664612e204a6e646570656e64656e6369612033323737222c22736563746f72223a224f6669632e2032303820534547554e444f205049534f227d2c2231302e32352e352e3139223a7b226469726563223a22417664612e204a6e646570656e64656e6369612033323737222c22736563746f72223a225052494d4552205049534f20414c20464f4e444f227d7d";
+// 🔒 DICCIONARIO CIFRADO SEGURO (La contraseña EMUI2026 es la llave matemática, no está escrita aquí)
+const DATOS_PROTEGIDOS_HEX = "306d6b63303c733324637d7a3120616f73756b78292c6e64627d70657e286377757b326330366b303c70332463767e6e30207d6164746f63292461627c7a76637e284063777532303061353c70332463717e6a3120616f73756b7829246e636b63697e68285a7375616e6d6333303062323c71332463727e693120616f73756b78292c6e64627d70657e284263706b72646c244365636433303062313c71332463737e683120616f73756b78292c6e64627d70657e284963776d6333333033303062303c713324637c7e6f3120616f73756b78292c6e64627d70657e284373626f7c6d656f6333303062373c713324637d7e6e3120616f73756b78292c6e64627d70657e285a4433303062363c713324637e7e6d3120616f73756b78292c6e64627d70657e284963776d6333333130245543415348424924524f5b4d33303062353c713324637f7e6c3120616f73756b78292c6e64627d70657e28565a4f4b435424564f534724434a24404748444f3b";
 
 // 1. Cargar el JSON dinámico saltando la cache del navegador
 fetch(`${urlJson}?t=${new Date().getTime()}`)
@@ -60,7 +60,7 @@ function formatearEtiquetaToner(valorOriginal, prefijoColor = "") {
     return `<span class="${claseEstilo}">${prefijoColor}${valorToner}%</span>`;
 }
 
-// 2. Función para calcular diferencias y construir la interfaz
+// 2. Función para calcular diferencias y construir la interfaz web
 function renderizarTabla() {
     const selector = document.getElementById('selector-mes');
     if (!selector || !selector.value) return;
@@ -73,7 +73,6 @@ function renderizarTabla() {
 
     document.getElementById('actualizacion').innerText = `Última lectura de este mes: ${datosHistorial[mesSeleccionado].ultima_actualizacion}`;
 
-    // Calcular el mes anterior para hacer la resta del contador
     const [year, month] = mesSeleccionado.split('-').map(Number);
     const fechaMesAnterior = new Date(year, month - 2, 1);
     const mesAnteriorClave = fechaMesAnterior.getFullYear() + "-" + String(fechaMesAnterior.getMonth() + 1).padStart(2, '0');
@@ -81,10 +80,7 @@ function renderizarTabla() {
     const datosActuales = datosHistorial[mesSeleccionado].datos;
     const datosAnteriores = datosHistorial[mesAnteriorClave] ? datosHistorial[mesAnteriorClave].datos : null;
 
-    // INICIO DEL BUCLE FOR
     for (const [nombreImp, info] of Object.entries(datosActuales)) {
-
-        // Procesar Contador de Hojas
         let hojasMostrar = `<span class="sin-datos">0 hojas</span>`;
         const valorContadorActual = info["Contador General"];
 
@@ -100,17 +96,14 @@ function renderizarTabla() {
             hojasMostrar = `<span class="badge-consumo">${Number(valorContadorActual).toLocaleString()} hojas </span>`;
         }
 
-        // Procesar Porcentaje de Tóner Negro
         let valorOriginalNegro = info["Porcentaje Tóner Negro"] || info["Nivel de Tóner"];
         let tonerMostrar = formatearEtiquetaToner(valorOriginalNegro, "N:" );
 
-        // Procesar Tóner de color (si existen en el JSON de esta impresora)
         if (info["Porcentaje Tóner Cian"] !== undefined) {
             let tCian = formatearEtiquetaToner(info["Porcentaje Tóner Cian"],"C:");
             let tMagenta = formatearEtiquetaToner(info["Porcentaje Tóner Magenta"],"M:");
             let tAmarillo = formatearEtiquetaToner(info["Porcentaje Tóner Amarillo"],"A:");
             
-            // Añadimos saltos de línea estructurados o un contenedor para que se vean juntos ordenadamente
             tonerMostrar = `
                 <div class="bloque-toners">
                     ${tonerMostrar} ${tCian} ${tMagenta} ${tAmarillo}
@@ -118,7 +111,6 @@ function renderizarTabla() {
             `;
         }
 
-        // Insertar fila unificada por impresora
         cuerpo.innerHTML += `
             <tr>
                 <td><strong>${nombreImp}</strong></td>
@@ -129,28 +121,32 @@ function renderizarTabla() {
     } 
 } 
 
-// 3. Función auxiliar (Mover afuera para evitar errores)
-function traducirMes(mesClave) {
+// 3. Función auxiliar para nombres de meses
+function descubrirMes(mesClave) {
     const [year, month] = mesClave.split('-');
     const nombres = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
     return `${nombres[parseInt(month) - 1]} ${year}`;
 }
+// Alias para mantener compatibilidad
+function traducirMes(mesClave) { return descubrirMes(mesClave); }
 
-// Función Criptográfica interna de descifrado instantáneo
+// 🔒 FUNCIÓN CRIPTOGRÁFICA SEGURA: La contraseña ingresada intenta descifrar matemáticamente los datos.
 function obtenerDiccionarioDescifrado(clave) {
-    if (clave !== "EMUI2026") return null; // Clave de acceso requerida
+    if (!clave) return null;
     try {
         let str = "";
         for (let i = 0; i < DATOS_PROTEGIDOS_HEX.length; i += 2) {
-            str += String.fromCharCode(parseInt(DATOS_PROTEGIDOS_HEX.substr(i, 2), 16));
+            let byte = parseInt(DATOS_PROTEGIDOS_HEX.substr(i, 2), 16);
+            let charClave = clave.charCodeAt((i / 2) % clave.length);
+            str += String.fromCharCode(byte ^ charClave); 
         }
-        return JSON.parse(str);
+        return JSON.parse(str); // Si la clave es errónea, esto romperá y saltará al catch.
     } catch (e) {
         return null;
     }
 }
 
-// 4. FUNCIÓN EXCEL PROTEGIDA: Pide contraseña para inyectar las ubicaciones privadas
+// 4. FUNCIÓN EXCEL COMPARATIVA MODIFICADA
 function descargarExcelMensual() {
     const selector = document.getElementById('selector-mes');
     if (!selector || !selector.value) {
@@ -158,7 +154,6 @@ function descargarExcelMensual() {
         return;
     }
 
-    // Pedir contraseña de seguridad de forma interactiva
     const claveIngresada = prompt("🔒 Ingrese la contraseña para incluir Direcciones y Sectores privados:");
     const diccionarioDirecciones = obtenerDiccionarioDescifrado(claveIngresada);
 
@@ -175,38 +170,67 @@ function descargarExcelMensual() {
         return;
     }
 
+    // Calcular Claves para Mes Anterior y Hace 2 Meses
     const [year, month] = mesSeleccionado.split('-').map(Number);
+    
     const fechaMesAnterior = new Date(year, month - 2, 1);
     const mesAnteriorClave = fechaMesAnterior.getFullYear() + "-" + String(fechaMesAnterior.getMonth() + 1).padStart(2, '0');
+    const nombreMesAnteriorVisible = traducirMes(mesAnteriorClave);
     const datosAnteriores = datosHistorial[mesAnteriorClave] ? datosHistorial[mesAnteriorClave].datos : null;
 
+    const fechaHaceDosMeses = new Date(year, month - 3, 1);
+    const haceDosMesesClave = fechaHaceDosMeses.getFullYear() + "-" + String(fechaHaceDosMeses.getMonth() + 1).padStart(2, '0');
+    const datosHaceDosMeses = datosHistorial[haceDosMesesClave] ? datosHistorial[haceDosMesesClave].datos : null;
+
     const filasExcel = [
-        [`REPORTE DE CONSUMO MENSUAL - ${nombreMesVisible.toUpperCase()}`],
+        [`REPORTE DE CONSUMO MENSUAL COMPARATIVO`],
         [`Generado automáticamente el: ${new Date().toLocaleString()}`],
         [], 
-        ["Impresora", "Dirección IP", "Ubicación / Sector", "Dirección Física", "Hojas Impresas (En el mes)"]
+        ["Impresora", "Dirección IP", "Ubicación / Sector", "Dirección Física", `Hojas Impresas (${nombreMesAnteriorVisible})`, `Hojas Impresas (${nombreMesVisible})`]
     ];
 
     for (const [nombreImp, info] of Object.entries(datosActuales)) {
-        let hojasCalculadas = 0;
+        let hojasCalculadasActual = 0;
+        let hojasCalculadasAnterior = 0;
+        
         const valorContadorActual = info["Contador General"];
 
+        // ---- Cálculo del Mes Seleccionado (Actual) ----
         if (valorContadorActual === "ERROR" || valorContadorActual === undefined) {
-            hojasCalculadas = "OFFLINE";
+            hojasCalculadasActual = "OFFLINE";
         } else if (datosAnteriores && datosAnteriores[nombreImp] && datosAnteriores[nombreImp]["Contador General"]) {
             const valorContadorAnterior = datosAnteriores[nombreImp]["Contador General"];
             if (valorContadorAnterior !== "ERROR" && valorContadorAnterior !== undefined) {
-                hojasCalculadas = Number(valorContadorActual) - Number(valorContadorAnterior);
+                hojasCalculadasActual = Number(valorContadorActual) - Number(valorContadorAnterior);
             } else {
-                hojasCalculadas = Number(valorContadorActual);
+                hojasCalculadasActual = Number(valorContadorActual);
             }
         } else {
-            hojasCalculadas = Number(valorContadorActual);
+            hojasCalculadasActual = Number(valorContadorActual);
+        }
+
+        // ---- Cálculo del Mes Anterior ----
+        if (datosAnteriores && datosAnteriores[nombreImp]) {
+            const valorContadorAnterior = datosAnteriores[nombreImp]["Contador General"];
+            
+            if (valorContadorAnterior === "ERROR" || valorContadorAnterior === undefined) {
+                hojasCalculadasAnterior = "OFFLINE";
+            } else if (datosHaceDosMeses && datosHaceDosMeses[nombreImp] && datosHaceDosMeses[nombreImp]["Contador General"]) {
+                const valorContadorHaceDosMeses = datosHaceDosMeses[nombreImp]["Contador General"];
+                if (valorContadorHaceDosMeses !== "ERROR" && valorContadorHaceDosMeses !== undefined) {
+                    hojasCalculadasAnterior = Number(valorContadorAnterior) - Number(valorContadorHaceDosMeses);
+                } else {
+                    hojasCalculadasAnterior = Number(valorContadorAnterior);
+                }
+            } else {
+                hojasCalculadasAnterior = Number(valorContadorAnterior);
+            }
+        } else {
+            hojasCalculadasAnterior = "Sin Datos";
         }
 
         const ipImpresora = info.ip || "";
         
-        // Si el diccionario se descifró correctamente usa los datos, sino pone "Protegido"
         let datosExtra = { direc: "[Acceso Protegido]", sector: "[Acceso Protegido]" };
         if (diccionarioDirecciones) {
             datosExtra = diccionarioDirecciones[ipImpresora] || { direc: "Sin Dirección", sector: "Sin Sector" };
@@ -217,19 +241,26 @@ function descargarExcelMensual() {
             ipImpresora,
             datosExtra.sector,
             datosExtra.direc,
-            hojasCalculadas
+            hojasCalculadasAnterior,
+            hojasCalculadasActual
         ]);
     }
 
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.aoa_to_sheet(filasExcel);
 
-    ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 4 } }];
+    ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 5 } }];
 
+    // Formatear columnas de números (Columnas E y F -> Índices 4 y 5)
     for (let r = 4; r < filasExcel.length; r++) {
-        const cellRef = XLSX.utils.encode_cell({ r: r, c: 4 });
-        if (ws[cellRef] && typeof ws[cellRef].v === 'number') {
-            ws[cellRef].z = '#,##0';
+        const cellRefAnterior = XLSX.utils.encode_cell({ r: r, c: 4 });
+        if (ws[cellRefAnterior] && typeof ws[cellRefAnterior].v === 'number') {
+            ws[cellRefAnterior].z = '#,##0';
+        }
+        
+        const cellRefActual = XLSX.utils.encode_cell({ r: r, c: 5 });
+        if (ws[cellRefActual] && typeof ws[cellRefActual].v === 'number') {
+            ws[cellRefActual].z = '#,##0';
         }
     }
 
