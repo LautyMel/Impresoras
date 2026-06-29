@@ -122,13 +122,11 @@ function renderizarTabla() {
 } 
 
 // 3. Función auxiliar para nombres de meses
-function descubrirMes(mesClave) {
+function traducirMes(mesClave) {
     const [year, month] = mesClave.split('-');
     const nombres = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
     return `${nombres[parseInt(month) - 1]} ${year}`;
 }
-// Alias para mantener compatibilidad
-function traducirMes(mesClave) { return descubrirMes(mesClave); }
 
 // 🔒 FUNCIÓN CRIPTOGRÁFICA SEGURA: La contraseña ingresada intenta descifrar matemáticamente los datos.
 function obtenerDiccionarioDescifrado(clave) {
@@ -146,14 +144,8 @@ function obtenerDiccionarioDescifrado(clave) {
     }
 }
 
-// 4. FUNCIÓN EXCEL COMPARATIVA MODIFICADA
+// 4. FUNCIÓN EXCEL HISTÓRICA GENERAL (Muestra todos los meses del historial en columnas hacia la derecha)
 function descargarExcelMensual() {
-    const selector = document.getElementById('selector-mes');
-    if (!selector || !selector.value) {
-        alert("Por favor, selecciona un mes válido primero.");
-        return;
-    }
-
     const claveIngresada = prompt("🔒 Ingrese la contraseña para incluir Direcciones y Sectores privados:");
     const diccionarioDirecciones = obtenerDiccionarioDescifrado(claveIngresada);
 
@@ -161,106 +153,105 @@ function descargarExcelMensual() {
         alert("⚠️ Contraseña incorrecta. El reporte se descargará con las celdas de ubicación ocultas por seguridad.");
     }
 
-    const mesSeleccionado = selector.value;
-    const nombreMesVisible = traducirMes(mesSeleccionado);
-    const datosActuales = datosHistorial[mesSeleccionado]?.datos;
-
-    if (!datosActuales) {
+    // Obtener todos los meses disponibles y ordenarlos cronológicamente (antiguo a reciente)
+    const listaMeses = Object.keys(datosHistorial).sort(); 
+    if (listaMeses.length === 0) {
         alert("No hay datos disponibles para exportar.");
         return;
     }
 
-    // Calcular Claves para Mes Anterior y Hace 2 Meses
-    const [year, month] = mesSeleccionado.split('-').map(Number);
-    
-    const fechaMesAnterior = new Date(year, month - 2, 1);
-    const mesAnteriorClave = fechaMesAnterior.getFullYear() + "-" + String(fechaMesAnterior.getMonth() + 1).padStart(2, '0');
-    const nombreMesAnteriorVisible = traducirMes(mesAnteriorClave);
-    const datosAnteriores = datosHistorial[mesAnteriorClave] ? datosHistorial[mesAnteriorClave].datos : null;
-
-    const fechaHaceDosMeses = new Date(year, month - 3, 1);
-    const haceDosMesesClave = fechaHaceDosMeses.getFullYear() + "-" + String(fechaHaceDosMeses.getMonth() + 1).padStart(2, '0');
-    const datosHaceDosMeses = datosHistorial[haceDosMesesClave] ? datosHistorial[haceDosMesesClave].datos : null;
+    // Construir la fila de encabezados dinámicos basándose en los meses que existan en el JSON
+    const encabezados = ["Impresora", "Dirección IP", "Ubicación / Sector", "Dirección Física"];
+    listaMeses.forEach(mesClave => {
+        encabezados.push(`Hojas (${traducirMes(mesClave)})`);
+    });
 
     const filasExcel = [
-        [`REPORTE DE CONSUMO MENSUAL COMPARATIVO`],
+        [`REPORTE GENERAL HISTÓRICO DE CONSUMO`],
         [`Generado automáticamente el: ${new Date().toLocaleString()}`],
         [], 
-        ["Impresora", "Dirección IP", "Ubicación / Sector", "Dirección Física", `Hojas Impresas (${nombreMesAnteriorVisible})`, `Hojas Impresas (${nombreMesVisible})`]
+        encabezados
     ];
 
-    for (const [nombreImp, info] of Object.entries(datosActuales)) {
-        let hojasCalculadasActual = 0;
-        let hojasCalculadasAnterior = 0;
-        
-        const valorContadorActual = info["Contador General"];
+    // Obtener un Set único con todas las impresoras del historial global
+    const todasLasImpresoras = new Set();
+    listaMeses.forEach(mes => {
+        if (datosHistorial[mes] && datosHistorial[mes].datos) {
+            Object.keys(datosHistorial[mes].datos).forEach(nombreImp => todasLasImpresoras.add(nombreImp));
+        }
+    });
 
-        // ---- Cálculo del Mes Seleccionado (Actual) ----
-        if (valorContadorActual === "ERROR" || valorContadorActual === undefined) {
-            hojasCalculadasActual = "OFFLINE";
-        } else if (datosAnteriores && datosAnteriores[nombreImp] && datosAnteriores[nombreImp]["Contador General"]) {
-            const valorContadorAnterior = datosAnteriores[nombreImp]["Contador General"];
-            if (valorContadorAnterior !== "ERROR" && valorContadorAnterior !== undefined) {
-                hojasCalculadasActual = Number(valorContadorActual) - Number(valorContadorAnterior);
-            } else {
-                hojasCalculadasActual = Number(valorContadorActual);
+    // Procesar los datos de cada impresora mes por mes
+    for (const nombreImp of todasLasImpresoras) {
+        let ipImpresora = "";
+        for (let i = listaMeses.length - 1; i >= 0; i--) {
+            if (datosHistorial[listaMeses[i]].datos[nombreImp]) {
+                ipImpresora = datosHistorial[listaMeses[i]].datos[nombreImp].ip || "";
+                break;
             }
-        } else {
-            hojasCalculadasActual = Number(valorContadorActual);
         }
 
-        // ---- Cálculo del Mes Anterior ----
-        if (datosAnteriores && datosAnteriores[nombreImp]) {
-            const valorContadorAnterior = datosAnteriores[nombreImp]["Contador General"];
-            
-            if (valorContadorAnterior === "ERROR" || valorContadorAnterior === undefined) {
-                hojasCalculadasAnterior = "OFFLINE";
-            } else if (datosHaceDosMeses && datosHaceDosMeses[nombreImp] && datosHaceDosMeses[nombreImp]["Contador General"]) {
-                const valorContadorHaceDosMeses = datosHaceDosMeses[nombreImp]["Contador General"];
-                if (valorContadorHaceDosMeses !== "ERROR" && valorContadorHaceDosMeses !== undefined) {
-                    hojasCalculadasAnterior = Number(valorContadorAnterior) - Number(valorContadorHaceDosMeses);
-                } else {
-                    hojasCalculadasAnterior = Number(valorContadorAnterior);
-                }
-            } else {
-                hojasCalculadasAnterior = Number(valorContadorAnterior);
-            }
-        } else {
-            hojasCalculadasAnterior = "Sin Datos";
-        }
-
-        const ipImpresora = info.ip || "";
-        
         let datosExtra = { direc: "[Acceso Protegido]", sector: "[Acceso Protegido]" };
         if (diccionarioDirecciones) {
             datosExtra = diccionarioDirecciones[ipImpresora] || { direc: "Sin Dirección", sector: "Sin Sector" };
         }
 
-        filasExcel.push([
+        const filaImpresora = [
             nombreImp,
             ipImpresora,
             datosExtra.sector,
-            datosExtra.direc,
-            hojasCalculadasAnterior,
-            hojasCalculadasActual
-        ]);
+            datosExtra.direc
+        ];
+
+        // Calcular consumos individuales para cada mes respectivo de la línea de tiempo
+        listaMeses.forEach((mesSeleccionado) => {
+            const datosActuales = datosHistorial[mesSeleccionado]?.datos;
+            const info = datosActuales ? datosActuales[nombreImp] : null;
+
+            if (!info) {
+                filaImpresora.push("-"); // No registrada en este mes
+                return;
+            }
+
+            const valorContadorActual = info["Contador General"];
+
+            if (valorContadorActual === "ERROR" || valorContadorActual === undefined) {
+                filaImpresora.push("OFFLINE");
+            } else {
+                const [year, month] = mesSeleccionado.split('-').map(Number);
+                const fechaMesAnterior = new Date(year, month - 2, 1);
+                const mesAnteriorClave = fechaMesAnterior.getFullYear() + "-" + String(fechaMesAnterior.getMonth() + 1).padStart(2, '0');
+                const datosAnteriores = datosHistorial[mesAnteriorClave]?.datos;
+
+                if (datosAnteriores && datosAnteriores[nombreImp] && datosAnteriores[nombreImp]["Contador General"]) {
+                    const valorContadorAnterior = datosAnteriores[nombreImp]["Contador General"];
+                    if (valorContadorAnterior !== "ERROR" && valorContadorAnterior !== undefined) {
+                        filaImpresora.push(Number(valorContadorActual) - Number(valorContadorAnterior));
+                    } else {
+                        filaImpresora.push(Number(valorContadorActual));
+                    }
+                } else {
+                    filaImpresora.push(Number(valorContadorActual));
+                }
+            }
+        });
+
+        filasExcel.push(filaImpresora);
     }
 
+    // Compilación final del documento XLSX
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.aoa_to_sheet(filasExcel);
 
-    ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 5 } }];
+    ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: encabezados.length - 1 } }];
 
-    // Formatear columnas de números (Columnas E y F -> Índices 4 y 5)
+    // Asignar el renderizado de millares numéricos (#,##0) a todas las celdas de las columnas de meses
     for (let r = 4; r < filasExcel.length; r++) {
-        const cellRefAnterior = XLSX.utils.encode_cell({ r: r, c: 4 });
-        if (ws[cellRefAnterior] && typeof ws[cellRefAnterior].v === 'number') {
-            ws[cellRefAnterior].z = '#,##0';
-        }
-        
-        const cellRefActual = XLSX.utils.encode_cell({ r: r, c: 5 });
-        if (ws[cellRefActual] && typeof ws[cellRefActual].v === 'number') {
-            ws[cellRefActual].z = '#,##0';
+        for (let c = 4; c < encabezados.length; c++) {
+            const cellRef = XLSX.utils.encode_cell({ r: r, c: c });
+            if (ws[cellRef] && typeof ws[cellRef].v === 'number') {
+                ws[cellRef].z = '#,##0';
+            }
         }
     }
 
@@ -269,6 +260,6 @@ function descargarExcelMensual() {
     });
     ws['!cols'] = maxAnchos.map(w => ({ wch: w }));
 
-    XLSX.utils.book_append_sheet(wb, ws, `Reporte ${mesSeleccionado}`);
-    XLSX.writeFile(wb, `Reporte_Impresoras_${mesSeleccionado}.xlsx`);
+    XLSX.utils.book_append_sheet(wb, ws, "Historial General");
+    XLSX.writeFile(wb, "Reporte_General_Impresoras.xlsx");
 }
