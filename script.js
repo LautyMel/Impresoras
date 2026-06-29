@@ -5,7 +5,7 @@ const GITHUB_USER = "LautyMel";
 const GITHUB_REPO = "Impresoras";
 const urlJson = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/historial_impresoras.json`;
 
-// Diccionario con los datos pasados en la imagen (Solo para el Excel)
+// Diccionario con las direcciones físicas (Solo para uso del Excel)
 const DICCIONARIO_DIRECCIONES = {
     "10.209.34.69":  { direc: "Avda. Castañares 2351", sector: "Transporte/Logistica (Beto Figliano)" },
     "10.209.87.29":  { direc: "Avda. Castañares 2350", sector: "Ofic. Tecnica (Fernando Albarracin)" },
@@ -50,7 +50,27 @@ fetch(`${urlJson}?t=${new Date().getTime()}`)
         document.getElementById('actualizacion').innerHTML = "<span style='color: #e74c3c; font-weight: bold;'>Error: No se pudo conectar con los datos de GitHub. Revisa el usuario y repositorio.</span>";
     });
 
-// 2. Función para construir la interfaz HTML (Solo muestra Impresora, IP y Hojas)
+// Función auxiliar interna para dar estilo a cualquier tipo de tóner
+function formatearEtiquetaToner(valorOriginal, prefijoColor = "") {
+    if (valorOriginal === "ERROR" || valorOriginal === undefined || valorOriginal === null || valorOriginal === "") {
+        return `<span class="badge-error">${prefijoColor}OFFLINE</span>`;
+    }
+    
+    let valorToner = parseInt(valorOriginal, 10);
+    let claseEstilo = "";
+
+    if (valorToner >= 50 && valorToner <= 100) {
+        claseEstilo = "toner-alto"; 
+    } else if (valorToner >= 20 && valorToner < 50) {
+        claseEstilo = "toner-medio";
+    } else {
+        claseEstilo = "toner-bajo";
+    }
+
+    return `<span class="${claseEstilo}">${prefijoColor}${valorToner}%</span>`;
+}
+
+// 2. Función para calcular diferencias y construir la interfaz HTML (CON TÓNERS)
 function renderizarTabla() {
     const selector = document.getElementById('selector-mes');
     if (!selector || !selector.value) return;
@@ -89,12 +109,30 @@ function renderizarTabla() {
             hojasMostrar = `<span class="badge-consumo">${Number(valorContadorActual).toLocaleString()} hojas </span>`;
         }
 
-        // Insertar fila unificada en la tabla HTML (Sin columna Tóner)
+        // Procesar Porcentaje de Tóner Negro (Vuelve a activarse para la web)
+        let valorOriginalNegro = info["Porcentaje Tóner Negro"] || info["Nivel de Tóner"];
+        let tonerMostrar = formatearEtiquetaToner(valorOriginalNegro, "N: ");
+
+        // Procesar Tóner de color si existen en el JSON
+        if (info["Porcentaje Tóner Cian"] !== undefined && info["Porcentaje Tóner Cian"] !== "N/A") {
+            let tCian = formatearEtiquetaToner(info["Porcentaje Tóner Cian"], "C: ");
+            let tMagenta = formatearEtiquetaToner(info["Porcentaje Tóner Magenta"], "M: ");
+            let tAmarillo = formatearEtiquetaToner(info["Porcentaje Tóner Amarillo"], "A: ");
+            
+            tonerMostrar = `
+                <div class="bloque-toners">
+                    ${tonerMostrar} ${tCian} ${tMagenta} ${tAmarillo}
+                </div>
+            `;
+        }
+
+        // Insertar fila unificada por impresora (Con la columna tóner de vuelta)
         cuerpo.innerHTML += `
             <tr>
                 <td><strong>${nombreImp}</strong></td>
                 <td>${info.ip || 'Sin IP'}</td>
                 <td>${hojasMostrar}</td>
+                <td>${tonerMostrar}</td>
             </tr>`;
     } 
 } 
@@ -106,7 +144,7 @@ function traducirMes(mesClave) {
     return `${nombres[parseInt(month) - 1]} ${year}`;
 }
 
-// 4. Generar y descargar el reporte mensual en formato Excel (.xlsx) con Colores y Direcciones
+// 4. Generar y descargar el reporte mensual en formato Excel (Limpio de tóners, con Direcciones y Colores)
 function descargarExcelMensual() {
     const selector = document.getElementById('selector-mes');
     if (!selector || !selector.value) {
@@ -128,7 +166,7 @@ function descargarExcelMensual() {
     const mesAnteriorClave = fechaMesAnterior.getFullYear() + "-" + String(fechaMesAnterior.getMonth() + 1).padStart(2, '0');
     const datosAnteriores = datosHistorial[mesAnteriorClave] ? datosHistorial[mesAnteriorClave].datos : null;
 
-    // Estructurar la matriz de celdas para Excel (Agregadas las columnas de Dirección y Sector de la imagen)
+    // Estructurar el Excel (Solo hojas impresas + ubicación física extraída de la imagen)
     const filasExcel = [
         [`REPORTE DE CONSUMO MENSUAL - ${nombreMesVisible.toUpperCase()}`],
         [`Generado automáticamente el: ${new Date().toLocaleString()}`],
@@ -153,7 +191,6 @@ function descargarExcelMensual() {
             hojasCalculadas = Number(valorContadorActual);
         }
 
-        // Buscar datos extras mapeados desde la IP
         const ipImpresora = info.ip || "";
         const datosExtra = DICCIONARIO_DIRECCIONES[ipImpresora] || { direc: "Sin Dirección", sector: "Sin Sector" };
 
@@ -170,16 +207,13 @@ function descargarExcelMensual() {
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.aoa_to_sheet(filasExcel);
 
-    // --- DISEÑO Y ESTILIZACIÓN DE CELDAS (SheetJS PRO) ---
-    // Combinar celda de título (A1:E1)
+    // Estilos del Excel
     ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 4 } }];
 
-    // Definir estilos de color
     const estiloTitulo = { font: { name: "Segoe UI", size: 16, bold: true, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: "1B365D" } }, alignment: { horizontal: "center", vertical: "center" } };
     const estiloHeader = { font: { name: "Segoe UI", size: 11, bold: true, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: "2C4D75" } }, alignment: { horizontal: "center" } };
     const estiloZebra = { fill: { fgColor: { rgb: "F4F7FA" } } };
     
-    // Aplicar estilos dinámicamente sobre las celdas generadas
     for (let r = 0; r < filasExcel.length; r++) {
         for (let c = 0; c < filasExcel[r].length; c++) {
             const cellRef = XLSX.utils.encode_cell({ r: r, c: c });
@@ -190,11 +224,9 @@ function descargarExcelMensual() {
             } else if (r === 3) {
                 ws[cellRef].s = estiloHeader;
             } else if (r > 3) {
-                // Formato numérico para la columna de Hojas Impresas (Columna E / índice 4)
                 if (c === 4 && typeof ws[cellRef].v === 'number') {
                     ws[cellRef].z = '#,##0';
                 }
-                // Zebra striping intercalado para las filas
                 if (r % 2 === 0) {
                     ws[cellRef].s = estiloZebra;
                 }
@@ -202,7 +234,6 @@ function descargarExcelMensual() {
         }
     }
 
-    // Ajustar anchos automáticos de columnas para que no se corten los textos largos
     const maxAnchos = filasExcel[3].map((_, colIdx) => {
         return Math.max(...filasExcel.map(row => row[colIdx] ? row[colIdx].toString().length : 0)) + 4;
     });
