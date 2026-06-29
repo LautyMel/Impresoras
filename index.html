@@ -1,41 +1,71 @@
 <!DOCTYPE html>
+
 <html lang="es">
+
 <head>
+
     <meta charset="UTF-8">
+
     <title>Reporte de Consumo Mensual</title>
+
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
     <script src="script.js"></script>
+
 </head>
+
 <body>
+
     <div class="container">
+
         <h1>IMPRESORAS EMUI</h1>
+
         <div class="sub" id="actualizacion">Cargando datos desde GitHub...</div>
+
         
-        <div class="controles" style="margin-bottom: 20px;">
-            <label for="selector-mes"><strong>Seleccionar Mes a Analizar: </strong></label>
-            <select id="selector-mes" onchange="renderizarTabla()"></select>
-            
-            <button id="btn-excel" onclick="descargarExcelMensual()" style="margin-left: 15px; padding: 6px 12px; cursor: pointer; font-weight: bold; background-color: #27ae60; color: white; border: none; border-radius: 4px;">
-                📊 Descargar Excel
-            </button>
-        </div>
+
+        <label for="selector-mes"><strong>Seleccionar Mes a Analizar: </strong></label>
+
+        <select id="selector-mes" onchange="renderizarTabla()"></select>
+
+
 
         <table>
+
             <thead>
+
                 <tr>
+
                     <th>Impresora</th>
+
                     <th>Dirección IP</th>
+
                     <th>Hojas Impresas (Este Mes)</th>
+
                     <th>Porcentaje de Tóner</th>
+
                 </tr>
+
             </thead>
+
             <tbody id="tabla-cuerpo">
+
                 <tr>
+
                     <td colspan="4" style="text-align: center; color: #7f8c8d;">Buscando registros...</td>
+
                 </tr>
+
             </tbody>
+
         </table>
+
     </div>
+
+
+
+  
+
 </body>
-</html>
+
+</html> 
