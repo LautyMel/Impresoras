@@ -106,7 +106,7 @@
         }
     },
     "2026-07": {
-        "ultima_actualizacion": "2026-07-13 15:21:11",
+        "ultima_actualizacion": "2026-07-14 08:39:46",
         "datos": {
             "Impresora 1": {
                 "ip": "10.25.5.19",
@@ -115,23 +115,23 @@
             },
             "Impresora 2": {
                 "ip": "10.25.5.20",
-                "Contador General": 4774,
+                "Contador General": 4780,
                 "Porcentaje Tóner Negro": "86%"
             },
             "Impresora 3": {
                 "ip": "10.25.5.21",
-                "Contador General": 1946,
+                "Contador General": 1947,
                 "Porcentaje Tóner Negro": "31%"
             },
             "Impresora 4": {
                 "ip": "10.25.5.22",
-                "Contador General": 1464,
-                "Porcentaje Tóner Negro": "50%"
+                "Contador General": 1496,
+                "Porcentaje Tóner Negro": "48%"
             },
             "Impresora 5": {
                 "ip": "10.25.5.23",
-                "Contador General": 2594,
-                "Porcentaje Tóner Negro": "13%"
+                "Contador General": 2597,
+                "Porcentaje Tóner Negro": "12%"
             },
             "Impresora 6": {
                 "ip": "10.25.5.24",
@@ -143,17 +143,17 @@
             },
             "Impresora 7": {
                 "ip": "10.209.34.69",
-                "Contador General": 1023,
+                "Contador General": 1032,
                 "Porcentaje Tóner Negro": "64%"
             },
             "Impresora 8": {
                 "ip": "10.209.87.29",
-                "Contador General": 1290,
-                "Porcentaje Tóner Negro": "46%"
+                "Contador General": 1294,
+                "Porcentaje Tóner Negro": "45%"
             },
             "Impresora 9": {
                 "ip": "10.209.87.142",
-                "Contador General": 1034,
+                "Contador General": 1035,
                 "Porcentaje Tóner Negro": "58%"
             }
         }
