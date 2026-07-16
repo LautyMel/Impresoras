@@ -106,31 +106,31 @@
         }
     },
     "2026-07": {
-        "ultima_actualizacion": "2026-07-15 12:55:12",
+        "ultima_actualizacion": "2026-07-15 13:06:55",
         "datos": {
             "Impresora 1": {
                 "ip": "10.25.5.19",
-                "Contador General": 2912,
+                "Contador General": 2913,
                 "Porcentaje Tóner Negro": "13%"
             },
             "Impresora 2": {
                 "ip": "10.25.5.20",
-                "Contador General": 4975,
+                "Contador General": 4985,
                 "Porcentaje Tóner Negro": "85%"
             },
             "Impresora 3": {
                 "ip": "10.25.5.21",
-                "Contador General": 2005,
+                "Contador General": 2008,
                 "Porcentaje Tóner Negro": "30%"
             },
             "Impresora 4": {
                 "ip": "10.25.5.22",
-                "Contador General": 1498,
+                "Contador General": 1500,
                 "Porcentaje Tóner Negro": "48%"
             },
             "Impresora 5": {
                 "ip": "10.25.5.23",
-                "Contador General": 2681,
+                "Contador General": 2687,
                 "Porcentaje Tóner Negro": "9%"
             },
             "Impresora 6": {
@@ -143,17 +143,17 @@
             },
             "Impresora 7": {
                 "ip": "10.209.34.69",
-                "Contador General": 1040,
-                "Porcentaje Tóner Negro": "64%"
+                "Contador General": 1041,
+                "Porcentaje Tóner Negro": "63%"
             },
             "Impresora 8": {
                 "ip": "10.209.87.29",
-                "Contador General": 1318,
+                "Contador General": 1320,
                 "Porcentaje Tóner Negro": "44%"
             },
             "Impresora 9": {
                 "ip": "10.209.87.142",
-                "Contador General": 1037,
+                "Contador General": 1038,
                 "Porcentaje Tóner Negro": "58%"
             }
         }
