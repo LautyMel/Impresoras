@@ -4,9 +4,6 @@ import os
 import time
 import sys
 from datetime import datetime
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 from github import Github  # Librería PyGithub
 
 # ==================== CONFIGURACIÓN ====================
@@ -18,25 +15,16 @@ GITHUB_FILE_PATH = "historial_impresoras.json"
 
 # Tiempo de espera entre escaneos (600 segundos = 10 minutos)
 TIEMPO_REPETICION = 600
-
-# Servidor SMTP para Gmail
-SMTP_SERVER = "smtp.gmail.com"
-SMTP_PORT = 587
 # =======================================================
 
-# Carga segura de credenciales desde config.txt
-ruta_config = os.path.join(CARPETA_PROYECTO, "config.txt")
+ruta_token = os.path.join(CARPETA_PROYECTO, "config.txt")
 try:
-    with open(ruta_config, "r", encoding="utf-8") as f:
-        lineas = f.read().splitlines()
-        GITHUB_TOKEN = lineas[0].strip() if len(lineas) > 0 else ""
-        SMTP_PASSWORD = lineas[1].strip() if len(lineas) > 1 else ""
-        SMTP_USER = lineas[2].strip() if len(lineas) > 2 else ""
-        EMAIL_DESTINATARIO = lineas[3].strip() if len(lineas) > 3 else ""
+    with open(ruta_token, "r", encoding="utf-8") as f:
+        GITHUB_TOKEN = f.read().strip()
 except FileNotFoundError:
     print(f"❌ ERROR: No se encontró el archivo 'config.txt' en {CARPETA_PROYECTO}")
-    print("Por favor, crea el archivo con el formato: Token, ContraseñaMail, MailEmisor, MailDestinatario.")
-    sys.exit(1)
+    print("Por favor, crea el archivo config.txt y pega tu token de GitHub adentro.")
+    GITHUB_TOKEN = ""
 
 IMPRESORAS = {
     "Impresora 1": "10.25.5.19",
@@ -75,7 +63,6 @@ def consultar_impresora_avanzado(printer, es_color=False):
                 elseif ($desc -like "*magenta*") {{ $indices["magenta"] = $i }}
                 elseif ($desc -like "*yellow*" -or $desc -like "*amarillo*") {{ $indices["yellow"] = $i }}
             }} catch {{}}
-         dodge
         }}
 
         # Función interna para calcular porcentaje por color
@@ -129,61 +116,6 @@ def consultar_impresora_avanzado(printer, es_color=False):
         return "ERROR", "ERROR", "ERROR", "ERROR", "ERROR"
     except:
         return "ERROR", "ERROR", "ERROR", "ERROR", "ERROR"
-
-
-def enviar_alerta_toner(nombre_impresora, ip, alertas_toner):
-    """
-    Envía una alerta formal por correo en formato HTML al equipo de soporte IT.
-    """
-    if not SMTP_USER or not EMAIL_DESTINATARIO or not SMTP_PASSWORD:
-        print(f" -> [Alerta] Envío cancelado para {nombre_impresora}: Faltan credenciales en config.txt.")
-        return
-
-    msg = MIMEMultipart()
-    msg['From'] = SMTP_USER
-    msg['To'] = EMAIL_DESTINATARIO
-    msg['Subject'] = f"⚠️ ALERTA: Tóner bajo en {nombre_impresora}"
-
-    # Construcción de las filas con los colores afectados
-    filas_toner = "".join([f"<li><strong>{color}:</strong> <span style='color:#e74c3c; font-weight:bold;'>{porcentaje}%</span></li>" for color, porcentaje in alertas_toner])
-
-    cuerpo_html = f"""
-    <html>
-    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-        <div style="max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-            <div style="background-color: #e74c3c; color: white; padding: 20px; text-align: center;">
-                <h2 style="margin: 0;">⚠️ Reemplazo de Tóner Requerido</h2>
-            </div>
-            <div style="padding: 20px; background-color: #f9f9f9;">
-                <p>Hola Soporte IT,</p>
-                <p>El Monitor de Impresoras ha detectado que los siguientes insumos están por debajo del umbral mínimo del 15%:</p>
-                <hr style="border: none; border-top: 1px solid #ddd; margin: 15px 0;">
-                <ul style="list-style: none; padding: 0;">
-                    <li style="margin-bottom: 8px;"><strong>Impresora:</strong> {nombre_impresora}</li>
-                    <li style="margin-bottom: 8px;"><strong>Dirección IP:</strong> <a href="http://{ip}" target="_blank">{ip}</a></li>
-                </ul>
-                <h3 style="color: #c0392b; margin-top: 20px;">Tóners Críticos:</h3>
-                <ul>
-                    {filas_toner}
-                </ul>
-                <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
-                <p style="font-size: 0.8em; color: #7f8c8d; text-align: center;">Mensaje automático generado por el sistema de monitoreo EMUI.</p>
-            </div>
-        </div>
-    </body>
-    </html>
-    """
-    msg.attach(MIMEText(cuerpo_html, 'html'))
-
-    try:
-        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
-        server.starttls()
-        server.login(SMTP_USER, SMTP_PASSWORD)
-        server.sendmail(SMTP_USER, EMAIL_DESTINATARIO, msg.as_string())
-        server.quit()
-        print(f" -> [Alerta] Correo de alerta enviado exitosamente para {nombre_impresora}.")
-    except Exception as e:
-        print(f" -> [Alerta] ERROR al intentar enviar correo para {nombre_impresora}: {e}")
 
 
 def subir_a_github(contenido_json):
@@ -262,28 +194,6 @@ def ejecutar_escaneo():
             historial[mes_clave]["datos"][nombre_imp]["Porcentaje Tóner Cian"] = t_cyan
             historial[mes_clave]["datos"][nombre_imp]["Porcentaje Tóner Magenta"] = t_magenta
             historial[mes_clave]["datos"][nombre_imp]["Porcentaje Tóner Amarillo"] = t_yellow
-
-        # --- VALIDACIÓN DE ALERTAS DE TÓNER BAJO (< 15%) ---
-        alertas_a_enviar = []
-        campos_toner = {
-            "Negro": t_black,
-            "Cian": t_cyan,
-            "Magenta": t_magenta,
-            "Amarillo": t_yellow
-        }
-        
-        for color, valor in campos_toner.items():
-            if valor and valor != "N/A" and valor != "ERROR":
-                try:
-                    porcentaje_num = int(valor.replace("%", "").strip())
-                    if porcentaje_num < 15:
-                        alertas_a_enviar.append((color, porcentaje_num))
-                except ValueError:
-                    pass
-
-        if alertas_a_enviar:
-            print(f" ⚠️ Detectado nivel crítico en {nombre_imp}. Procesando correo...")
-            enviar_alerta_toner(nombre_imp, ip_imp, alertas_a_enviar)
 
     json_final = json.dumps(historial, indent=4, ensure_ascii=False)
 
