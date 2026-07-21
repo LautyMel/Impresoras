@@ -19,7 +19,7 @@ GITHUB_FILE_PATH = "historial_impresoras.json"
 # Tiempo de espera entre escaneos (600 segundos = 10 minutos)
 TIEMPO_REPETICION = 600
 
-# ==================== CARGA DE CREDENCIALES SEGUIRAS ====================
+# ==================== CARGA DE CREDENCIALES Y DATOS PRIVADOS ====================
 ruta_secretos = os.path.join(CARPETA_PROYECTO, "secretos.json")
 try:
     with open(ruta_secretos, "r", encoding="utf-8") as f:
@@ -28,18 +28,20 @@ try:
         CORREO_REMITENTE = secretos.get("correo_remitente", "")
         CLAVE_APLICACION = secretos.get("clave_correo", "")
         CORREOS_DESTINO = secretos.get("correos_destino", [])
+        UBICACIONES = secretos.get("ubicaciones", {})
 except FileNotFoundError:
     print(f"❌ ERROR: No se encontró el archivo 'secretos.json' en {CARPETA_PROYECTO}")
-    print("Por favor, crea el archivo secretos.json con tus claves antes de continuar.")
+    print("Por favor, crea el archivo secretos.json con tus claves y ubicaciones antes de continuar.")
     GITHUB_TOKEN = ""
     CORREO_REMITENTE = ""
     CLAVE_APLICACION = ""
     CORREOS_DESTINO = []
+    UBICACIONES = {}
 
 # Memoria local para evitar spam de correos
 estado_alertas = {}
 
-# Diccionario de Impresoras
+# Diccionario Público de Impresoras
 IMPRESORAS = {
     "Impresora 1": "10.25.5.19",
     "Impresora 2": "10.25.5.20",
@@ -79,13 +81,14 @@ def enviar_alerta_correo(asunto, mensaje):
         print(f" ❌ [Email Error] No se pudo enviar el correo: {e}")
 
 
-def procesar_alertas(nombre_imp, ip_imp, contador, t_black, t_cyan, t_magenta, t_yellow, es_color):
+def procesar_alertas(nombre_imp, ip_imp, ubicacion_imp, contador, t_black, t_cyan, t_magenta, t_yellow, es_color):
     """
     Evalúa los estados y envía correos en umbrales escalonados:
     - 15% (Aviso preventivo)
     - 10% (Alerta media)
     - 5%  (Alerta crítica)
     - 0%  (Agotado / Reemplazo inmediato)
+    Incluye la ubicación física obtenida de forma segura desde secretos.json.
     """
     global estado_alertas
     
@@ -96,11 +99,12 @@ def procesar_alertas(nombre_imp, ip_imp, contador, t_black, t_cyan, t_magenta, t
         if not estado_alertas.get(clave_offline, False):
             asunto = f"🚨 ALERTA CRÍTICA: {nombre_imp} Fuera de Línea"
             mensaje = (f"La {nombre_imp} no responde al escaneo SNMP.\n\n"
-                       f"Detalles:\n"
+                       f"Detalles del equipo:\n"
                        f"- Impresora: {nombre_imp}\n"
+                       f"- Ubicación: {ubicacion_imp}\n"
                        f"- IP: {ip_imp}\n"
                        f"- Estado: Fuera de línea / Sin respuesta\n\n"
-                       f"Por favor revisar si el equipo está apagado o sin red.")
+                       f"Por favor acudir a '{ubicacion_imp}' para revisar si el equipo está apagado o sin red.")
             print(f" ⚠️ ALERTA: {nombre_imp} offline. Enviando mail...")
             enviar_alerta_correo(asunto, mensaje)
             estado_alertas[clave_offline] = True
@@ -118,7 +122,6 @@ def procesar_alertas(nombre_imp, ip_imp, contador, t_black, t_cyan, t_magenta, t
     for color, nivel in toners:
         clave_toner = f"{nombre_imp}_toner_{color}"
         
-        # Convertir nivel a entero si viene como porcentaje (ej: "12%")
         valor_num = None
         if isinstance(nivel, str) and nivel.endswith("%"):
             try:
@@ -129,10 +132,8 @@ def procesar_alertas(nombre_imp, ip_imp, contador, t_black, t_cyan, t_magenta, t
             valor_num = 0
 
         if valor_num is not None:
-            # Obtener el último umbral que ya se le notificó al usuario (None si no se ha notificado nada)
             ultimo_umbral_notificado = estado_alertas.get(clave_toner, None)
 
-            # Determinar en qué umbral actual se encuentra el tóner
             umbral_actual = None
             if valor_num == 0:
                 umbral_actual = 0
@@ -143,12 +144,9 @@ def procesar_alertas(nombre_imp, ip_imp, contador, t_black, t_cyan, t_magenta, t
             elif valor_num <= 15:
                 umbral_actual = 15
 
-            # Si está en un umbral crítico (15, 10, 5 o 0)
             if umbral_actual is not None:
-                # Solo enviamos correo si NO se ha notificado este umbral ni uno peor/más bajo
                 if ultimo_umbral_notificado is None or umbral_actual < ultimo_umbral_notificado:
                     
-                    # Personalizar asunto y mensaje según la urgencia
                     if umbral_actual == 0:
                         asunto = f"🚨 TÓNER AGOTADO: {nombre_imp} ({color} al 0%)"
                         prioridad = "REEMPLAZO INMEDIATO NECESARIO"
@@ -163,8 +161,9 @@ def procesar_alertas(nombre_imp, ip_imp, contador, t_black, t_cyan, t_magenta, t
                         prioridad = "Aviso preventivo"
 
                     mensaje = (f"Notificación de nivel de insumo.\n\n"
-                               f"Detalles:\n"
+                               f"Detalles del equipo:\n"
                                f"- Impresora: {nombre_imp}\n"
+                               f"- Ubicación: {ubicacion_imp}\n"
                                f"- IP: {ip_imp}\n"
                                f"- Color: {color}\n"
                                f"- Nivel Actual: {valor_num}%\n"
@@ -172,12 +171,9 @@ def procesar_alertas(nombre_imp, ip_imp, contador, t_black, t_cyan, t_magenta, t
                     
                     print(f" ⚠️ ALERTA ({umbral_actual}%): {nombre_imp} - Tóner {color} al {valor_num}%. Enviando mail...")
                     enviar_alerta_correo(asunto, mensaje)
-                    
-                    # Actualizamos la memoria con el umbral recién notificado
                     estado_alertas[clave_toner] = umbral_actual
 
             else:
-                # Si el tóner está por encima del 15% (se reemplazó por uno nuevo), reseteamos
                 if ultimo_umbral_notificado is not None:
                     print(f" ✅ Tóner {color} de {nombre_imp} reabastecido/cambiado.")
                     estado_alertas[clave_toner] = None
@@ -320,6 +316,9 @@ def ejecutar_escaneo():
             del historial[mes_clave]["datos"][nombre_guardado]
 
     for nombre_imp, ip_imp in IMPRESORAS.items():
+        # Busca la ubicación asociada a la IP en tu secretos.json privado
+        ubicacion_imp = UBICACIONES.get(ip_imp, "Ubicación Privada / No configurada")
+
         print(f"Escaneando {nombre_imp} ({ip_imp})...")
         
         if nombre_imp not in historial[mes_clave]["datos"]:
@@ -331,8 +330,8 @@ def ejecutar_escaneo():
         
         contador, t_black, t_cyan, t_magenta, t_yellow = consultar_impresora_avanzado(ip_imp, es_color)
         
-        # Evaluar alertas en tiempo real
-        procesar_alertas(nombre_imp, ip_imp, contador, t_black, t_cyan, t_magenta, t_yellow, es_color)
+        # Evaluar alertas en tiempo real pasando la ubicación privada
+        procesar_alertas(nombre_imp, ip_imp, ubicacion_imp, contador, t_black, t_cyan, t_magenta, t_yellow, es_color)
         
         if str(contador).isdigit():
             historial[mes_clave]["datos"][nombre_imp]["Contador General"] = int(contador)
