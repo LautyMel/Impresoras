@@ -3,10 +3,13 @@ import json
 import os
 import time
 import sys
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from datetime import datetime
 from github import Github  # Librería PyGithub
 
-# ==================== CONFIGURACIÓN ====================
+# ==================== CONFIGURACIÓN DE RUTAS ====================
 CARPETA_PROYECTO = os.path.dirname(os.path.abspath(__file__))
 
 # Configuración del Repositorio de GitHub
@@ -15,17 +18,28 @@ GITHUB_FILE_PATH = "historial_impresoras.json"
 
 # Tiempo de espera entre escaneos (600 segundos = 10 minutos)
 TIEMPO_REPETICION = 600
-# =======================================================
 
-ruta_token = os.path.join(CARPETA_PROYECTO, "config.txt")
+# ==================== CARGA DE CREDENCIALES SEGUIRAS ====================
+ruta_secretos = os.path.join(CARPETA_PROYECTO, "secretos.json")
 try:
-    with open(ruta_token, "r", encoding="utf-8") as f:
-        GITHUB_TOKEN = f.read().strip()
+    with open(ruta_secretos, "r", encoding="utf-8") as f:
+        secretos = json.load(f)
+        GITHUB_TOKEN = secretos.get("github_token", "")
+        CORREO_REMITENTE = secretos.get("correo_remitente", "")
+        CLAVE_APLICACION = secretos.get("clave_correo", "")
+        CORREOS_DESTINO = secretos.get("correos_destino", [])
 except FileNotFoundError:
-    print(f"❌ ERROR: No se encontró el archivo 'config.txt' en {CARPETA_PROYECTO}")
-    print("Por favor, crea el archivo config.txt y pega tu token de GitHub adentro.")
+    print(f"❌ ERROR: No se encontró el archivo 'secretos.json' en {CARPETA_PROYECTO}")
+    print("Por favor, crea el archivo secretos.json con tus claves antes de continuar.")
     GITHUB_TOKEN = ""
+    CORREO_REMITENTE = ""
+    CLAVE_APLICACION = ""
+    CORREOS_DESTINO = []
 
+# Memoria local para evitar spam de correos
+estado_alertas = {}
+
+# Diccionario de Impresoras
 IMPRESORAS = {
     "Impresora 1": "10.25.5.19",
     "Impresora 2": "10.25.5.20",
@@ -38,6 +52,97 @@ IMPRESORAS = {
     "Impresora 9": "10.209.87.142"
 }
 
+# ==================== SISTEMA DE ALERTAS POR EMAIL ====================
+def enviar_alerta_correo(asunto, mensaje):
+    """Envia un correo SMTP utilizando las credenciales cargadas de secretos.json"""
+    if not CORREO_REMITENTE or not CLAVE_APLICACION or not CORREOS_DESTINO:
+        print(" -> [Email] Omite el envío de correo: Faltan credenciales en secretos.json.")
+        return
+
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = CORREO_REMITENTE
+        msg['To'] = ", ".join(CORREOS_DESTINO)
+        msg['Subject'] = asunto
+        
+        msg.attach(MIMEText(mensaje, 'plain', 'utf-8'))
+        
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(CORREO_REMITENTE, CLAVE_APLICACION)
+        
+        server.sendmail(CORREO_REMITENTE, CORREOS_DESTINO, msg.as_string())
+        server.quit()
+        
+        print(f" 📧 [EMAIL ENVIADO] {asunto}")
+    except Exception as e:
+        print(f" ❌ [Email Error] No se pudo enviar el correo: {e}")
+
+
+def procesar_alertas(nombre_imp, ip_imp, contador, t_black, t_cyan, t_magenta, t_yellow, es_color):
+    """
+    Evalúa los estados y envía un único correo de alerta por problema detectado.
+    Cuando el problema se resuelve, rehabilita el aviso.
+    """
+    global estado_alertas
+    
+    # --- 1. EVALUAR ESTADO OFFLINE ---
+    clave_offline = f"{nombre_imp}_offline"
+    
+    if contador == "ERROR":
+        if not estado_alertas.get(clave_offline, False):
+            asunto = f"🚨 ALERTA CRÍTICA: {nombre_imp} Fuera de Línea"
+            mensaje = (f"La {nombre_imp} no responde al escaneo SNMP.\n\n"
+                       f"Detalles:\n"
+                       f"- Impresora: {nombre_imp}\n"
+                       f"- IP Correspondiente: {ip_imp}\n"
+                       f"- Estado: Fuera de línea / Sin respuesta\n\n"
+                       f"Por favor revisar si el equipo está apagado o sin red.")
+            print(f" ⚠️ ALERTA: {nombre_imp} offline. Enviando mail...")
+            enviar_alerta_correo(asunto, mensaje)
+            estado_alertas[clave_offline] = True
+        return  # Si está offline no podemos chequear tóners
+    else:
+        # Se recuperó de un corte offline
+        if estado_alertas.get(clave_offline, False):
+            print(f" ✅ La {nombre_imp} volvió a estar en línea.")
+            estado_alertas[clave_offline] = False
+
+    # --- 2. EVALUAR NIVELES DE TÓNER (< 15%) ---
+    toners = [("Negro", t_black)]
+    if es_color:
+        toners.extend([("Cian", t_cyan), ("Magenta", t_magenta), ("Amarillo", t_yellow)])
+
+    for color, nivel in toners:
+        clave_toner = f"{nombre_imp}_toner_{color}"
+        
+        if isinstance(nivel, str) and nivel.endswith("%"):
+            try:
+                valor_porcentaje = int(nivel.replace("%", ""))
+                
+                if valor_porcentaje < 15:
+                    if not estado_alertas.get(clave_toner, False):
+                        asunto = f"⚠️ ALERTA TÓNER: {nombre_imp} ({color} al {valor_porcentaje}%)"
+                        mensaje = (f"Se detectó un nivel crítico de consumible.\n\n"
+                                   f"Detalles:\n"
+                                   f"- Impresora: {nombre_imp}\n"
+                                   f"- IP Correspondiente: {ip_imp}\n"
+                                   f"- Color: {color}\n"
+                                   f"- Nivel Actual: {valor_porcentaje}%\n\n"
+                                   f"Por favor preparar el insumo de repuesto.")
+                        print(f" ⚠️ ALERTA: Tóner {color} de {nombre_imp} bajo. Enviando mail...")
+                        enviar_alerta_correo(asunto, mensaje)
+                        estado_alertas[clave_toner] = True
+                else:
+                    # El tóner se recargó/reemplazó por encima del 15%
+                    if estado_alertas.get(clave_toner, False):
+                        print(f" ✅ Tóner {color} de {nombre_imp} reabastecido.")
+                        estado_alertas[clave_toner] = False
+            except ValueError:
+                pass
+
+
+# ==================== CONSULTA POWERSHELL / SNMP ====================
 def consultar_impresora_avanzado(printer, es_color=False):
     """
     Ejecuta un script de PowerShell optimizado que extrae el contador general
@@ -59,9 +164,9 @@ def consultar_impresora_avanzado(printer, es_color=False):
             try {{
                 $desc = $sys.Get(".1.3.6.1.2.1.43.11.1.1.6.1.$i").ToLower()
                 if ($desc -like "*black*" -or $desc -like "*negro*") {{ $indices["black"] = $i }}
-                elseif ($desc -like "*cyan*" -or $desc -like "*cian*") {{ $indices["cyan"] = $i }}
-                elseif ($desc -like "*magenta*") {{ $indices["magenta"] = $i }}
-                elseif ($desc -like "*yellow*" -or $desc -like "*amarillo*") {{ $indices["yellow"] = $i }}
+                if ($desc -like "*cyan*" -or $desc -like "*cian*") {{ $indices["cyan"] = $i }}
+                if ($desc -like "*magenta*") {{ $indices["magenta"] = $i }}
+                if ($desc -like "*yellow*" -or $desc -like "*amarillo*") {{ $indices["yellow"] = $i }}
             }} catch {{}}
         }}
 
@@ -118,6 +223,7 @@ def consultar_impresora_avanzado(printer, es_color=False):
         return "ERROR", "ERROR", "ERROR", "ERROR", "ERROR"
 
 
+# ==================== SINCRONIZACIÓN NUBE ====================
 def subir_a_github(contenido_json):
     if not GITHUB_TOKEN:
         print(" -> [GitHub] Sincronización cancelada: Falta el Token de seguridad.")
@@ -145,6 +251,7 @@ def subir_a_github(contenido_json):
         print(f" -> [GitHub] ERROR al subir los datos: {e}")
 
 
+# ==================== ESCANEO Y BUCLE PRINCIPAL ====================
 def ejecutar_escaneo():
     ahora = datetime.now()
     fecha_str = ahora.strftime("%Y-%m-%d %H:%M:%S")
@@ -182,6 +289,9 @@ def ejecutar_escaneo():
         es_color = (nombre_imp == "Impresora 6")
         
         contador, t_black, t_cyan, t_magenta, t_yellow = consultar_impresora_avanzado(ip_imp, es_color)
+        
+        # Evaluar alertas en tiempo real
+        procesar_alertas(nombre_imp, ip_imp, contador, t_black, t_cyan, t_magenta, t_yellow, es_color)
         
         if str(contador).isdigit():
             historial[mes_clave]["datos"][nombre_imp]["Contador General"] = int(contador)
