@@ -8,7 +8,7 @@ ARCHIVO_DATOS_LOCAL = os.path.join(CARPETA_PROYECTO, "historial_impresoras.json"
 
 # ==================== CONFIGURACIÓN GENERAL ====================
 GITHUB_REPO = "LautyMel/Impresoras"      
-GITHUB_FILE_PATH = "historial_impresoras.json" 
+GITHUB_FILE_PATH = "backend/historial_impresoras.json"
 TIEMPO_REPETICION = 600 # Segundos (10 minutos)
 
 # ==================== DICCIONARIO PÚBLICO DE IMPRESORAS ====================
