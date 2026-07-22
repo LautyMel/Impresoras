@@ -3,8 +3,8 @@ import time
 import json
 from datetime import datetime
 
-# Importaciones de nuestros módulos
-from config import CARPETA_PROYECTO, ARCHIVO_DATOS_LOCAL, TIEMPO_REPETICION, IMPRESORAS, UBICACIONES
+# Importaciones limpias apuntando a la carpeta backend
+from config import CARPETA_BACKEND, ARCHIVO_DATOS_LOCAL, TIEMPO_REPETICION, IMPRESORAS, UBICACIONES
 from scanner import consultar_impresora_avanzado
 from notificaciones import procesar_alertas
 from sincronizacion import subir_a_github
@@ -14,7 +14,7 @@ def ejecutar_escaneo():
     fecha_str = ahora.strftime("%Y-%m-%d %H:%M:%S")
     mes_clave = ahora.strftime("%Y-%m")
 
-    # 1. Cargar el JSON local
+    # 1. Cargar el JSON local (usando la ruta absoluta dentro de backend)
     if os.path.exists(ARCHIVO_DATOS_LOCAL):
         with open(ARCHIVO_DATOS_LOCAL, "r", encoding="utf-8") as f:
             try:
@@ -66,16 +66,18 @@ def ejecutar_escaneo():
 
     json_final = json.dumps(historial, indent=4, ensure_ascii=False)
 
-    # 4. Guardar y Sincronizar
+    # 4. Guardar localmente dentro de backend/
     with open(ARCHIVO_DATOS_LOCAL, "w", encoding="utf-8") as f:
         f.write(json_final)
-    print(f"[{fecha_str}] Historial guardado localmente.")
+    print(f"[{fecha_str}] Historial guardado correctamente en: {ARCHIVO_DATOS_LOCAL}")
 
+    # 5. Sincronizar en la nube
     subir_a_github(json_final)
 
 if __name__ == "__main__":
-    if not os.path.exists(CARPETA_PROYECTO):
-        os.makedirs(CARPETA_PROYECTO)
+    # Corregido: Verificar que exista la carpeta backend en lugar de la raíz
+    if not os.path.exists(CARPETA_BACKEND):
+        os.makedirs(CARPETA_BACKEND)
 
     print("Monitor inteligente de impresoras iniciado...")
     
