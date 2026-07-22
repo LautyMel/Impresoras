@@ -66,7 +66,7 @@ def ejecutar_escaneo():
 
     json_final = json.dumps(historial, indent=4, ensure_ascii=False)
 
-    # 4. Guardar localmente dentro de backend/
+    # 4. Guardar localmente dentro de backend/ usando la constante centralizada
     with open(ARCHIVO_DATOS_LOCAL, "w", encoding="utf-8") as f:
         f.write(json_final)
     print(f"[{fecha_str}] Historial guardado correctamente en: {ARCHIVO_DATOS_LOCAL}")
@@ -75,7 +75,6 @@ def ejecutar_escaneo():
     subir_a_github(json_final)
 
 if __name__ == "__main__":
-    # Corregido: Verificar que exista la carpeta backend en lugar de la raíz
     if not os.path.exists(CARPETA_BACKEND):
         os.makedirs(CARPETA_BACKEND)
 
