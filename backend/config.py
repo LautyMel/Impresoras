@@ -1,34 +1,28 @@
 import os
 import json
 
-# ==================== RUTAS DEL SISTEMA ====================
-
-CARPETA_BACKEND = os.path.dirname(os.path.abspath(__file__))
-CARPETA_PROYECTO = os.path.dirname(CARPETA_BACKEND)
-
+CARPETA_PROYECTO = os.path.dirname(os.path.abspath(__file__))
 RUTA_SECRETOS = os.path.join(CARPETA_PROYECTO, "secretos.json")
 
-ARCHIVO_DATOS_LOCAL = os.path.join(CARPETA_BACKEND, "historial_impresoras.json")
+# El JSON vive en la raíz, igual que en tu versión original que funcionaba
+ARCHIVO_DATOS_LOCAL = os.path.join(CARPETA_PROYECTO, "historial_impresoras.json")
 
-# ==================== CONFIGURACIÓN GENERAL ====================
 GITHUB_REPO = "LautyMel/Impresoras"      
-GITHUB_FILE_PATH = "backend/historial_impresoras.json" # Ruta corregida para GitHub
-TIEMPO_REPETICION = 600 # Segundos (10 minutos)
+GITHUB_FILE_PATH = "historial_impresoras.json" # Directo a la raíz en GitHub
+TIEMPO_REPETICION = 600
 
-# ==================== DICCIONARIO PÚBLICO DE IMPRESORAS ====================
 IMPRESORAS = {
     "Impresora 1": "10.25.5.19",
     "Impresora 2": "10.25.5.20",
     "Impresora 3": "10.25.5.21",
     "Impresora 4": "10.25.5.22",
     "Impresora 5": "10.25.5.23",
-    "Impresora 6": "10.25.5.24",  # Impresora Color
+    "Impresora 6": "10.25.5.24",
     "Impresora 7": "10.209.34.69",
     "Impresora 8": "10.209.87.29",  
     "Impresora 9": "10.209.87.142"
 }
 
-# ==================== CARGA DE CREDENCIALES PRIVADAS ====================
 GITHUB_TOKEN = ""
 CORREO_REMITENTE = ""
 CLAVE_APLICACION = ""
@@ -45,4 +39,3 @@ try:
         UBICACIONES = secretos.get("ubicaciones", {})
 except FileNotFoundError:
     print(f"❌ ERROR: No se encontró el archivo 'secretos.json' en {CARPETA_PROYECTO}")
-    print("Por favor, créalo antes de ejecutar el programa.")
