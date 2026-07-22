@@ -4,7 +4,7 @@ import json
 # ==================== RUTAS DEL SISTEMA ====================
 CARPETA_PROYECTO = os.path.dirname(os.path.abspath(__file__))
 RUTA_SECRETOS = os.path.join(CARPETA_PROYECTO, "secretos.json")
-ARCHIVO_DATOS_LOCAL = os.path.join(CARPETA_PROYECTO, "historial_impresoras.json")
+ARCHIVO_DATOS_LOCAL = os.path.join(CARPETA_backend, "historial_impresoras.json")
 
 # ==================== CONFIGURACIÓN GENERAL ====================
 GITHUB_REPO = "LautyMel/Impresoras"      
