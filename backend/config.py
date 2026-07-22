@@ -2,14 +2,21 @@ import os
 import json
 
 # ==================== RUTAS DEL SISTEMA ====================
-CARPETA_PROYECTO = os.path.dirname(os.path.abspath(__file__))
+
 CARPETA_BACKEND = os.path.dirname(os.path.abspath(__file__))
+
+
+CARPETA_PROYECTO = os.path.dirname(CARPETA_BACKEND)
+
+
 RUTA_SECRETOS = os.path.join(CARPETA_PROYECTO, "secretos.json")
-ARCHIVO_DATOS_LOCAL = os.path.join(CARPETA_backend, "historial_impresoras.json")
+
+
+ARCHIVO_DATOS_LOCAL = os.path.join(CARPETA_BACKEND, "historial_impresoras.json")
 
 # ==================== CONFIGURACIÓN GENERAL ====================
 GITHUB_REPO = "LautyMel/Impresoras"      
-GITHUB_FILE_PATH = "backend/historial_impresoras.json"
+GITHUB_FILE_PATH = "backend/historial_impresoras.json" 
 TIEMPO_REPETICION = 600 # Segundos (10 minutos)
 
 # ==================== DICCIONARIO PÚBLICO DE IMPRESORAS ====================
