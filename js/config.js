@@ -8,7 +8,7 @@
 // === CONFIGURACIÓN DE GITHUB ===
 const GITHUB_USER = "LautyMel";
 const GITHUB_REPO = "Impresora";
-const URL_JSON = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/historial_impresoras.json`;
+const URL_JSON = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/historial_impresoras.json`;
 
 // === NOMBRES DE MESES EN ESPAÑOL ===
 const NOMBRES_MESES = [
