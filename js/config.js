@@ -7,7 +7,7 @@
 
 // === CONFIGURACIÓN DE GITHUB ===
 const GITHUB_USER = "LautyMel";
-const GITHUB_REPO = "Impreso";
+const GITHUB_REPO = "Impresora";
 const URL_JSON = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/historial_impresoras.json`;
 
 // === NOMBRES DE MESES EN ESPAÑOL ===
