@@ -1,0 +1,68 @@
+/* =============================================
+   12. FOOTER INSTITUCIONAL
+   ============================================= */
+.site-footer {
+    background: var(--gray-800);
+    color: rgba(255, 255, 255, 0.8);
+    padding: 20px 32px;
+    margin-top: auto;
+    border-top: 3px solid var(--emui-yellow);
+}
+
+.footer-content {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.footer-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.footer-logo {
+    height: 36px;
+    width: auto;
+    opacity: 0.8;
+    transition: opacity var(--ease), transform var(--ease);
+}
+
+.footer-logo:hover {
+    opacity: 1;
+    transform: scale(1.05);
+}
+
+.footer-text {
+    font-size: 0.78rem;
+    opacity: 0.55;
+}
+
+.footer-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    text-align: center;
+    font-size: 0.78rem;
+    font-weight: 500;
+}
+
+.footer-version {
+    font-size: 0.68rem;
+    opacity: 0.35;
+}
+
+.footer-right {
+    font-size: 0.72rem;
+    opacity: 0.45;
+}
+
+.footer-dato::before {
+    content: "🔄 ";
+}
+

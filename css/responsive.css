@@ -1,0 +1,139 @@
+/* =============================================
+   14. RESPONSIVE BREAKPOINTS
+   ============================================= */
+
+/* Tablet landscape / small desktop */
+@media (max-width: 1100px) {
+    .cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Tablet portrait */
+@media (max-width: 768px) {
+    .site-header {
+        padding: 12px 16px;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .logo-ba {
+        height: 38px;
+    }
+
+    .site-title {
+        font-size: 1.15rem;
+        letter-spacing: 1px;
+    }
+
+    .site-subtitle {
+        font-size: 0.7rem;
+    }
+
+    .container {
+        padding: 16px 12px 32px;
+    }
+
+    .cards-grid {
+        gap: 10px;
+    }
+
+    .card {
+        padding: 14px 16px;
+        gap: 12px;
+    }
+
+    .card-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.4rem;
+    }
+
+    .card-value {
+        font-size: 1.4rem;
+    }
+
+    .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .toolbar-right {
+        flex-wrap: wrap;
+    }
+
+    .toolbar-right .btn {
+        flex: 1;
+        justify-content: center;
+    }
+
+    select#selector-mes {
+        min-width: 100%;
+    }
+
+    th, td {
+        padding: 10px 12px;
+        font-size: 0.78rem;
+    }
+
+    .site-footer {
+        padding: 16px;
+    }
+
+    .footer-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 12px;
+    }
+
+    .footer-left {
+        justify-content: center;
+    }
+}
+
+/* Mobile small */
+@media (max-width: 480px) {
+    .cards-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    th, td {
+        padding: 8px 8px;
+        font-size: 0.72rem;
+    }
+
+    .bloque-toners {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .toner-bar-container {
+        min-width: 70px;
+    }
+
+    .modal-content {
+        max-height: 90vh;
+        border-radius: var(--radius-md);
+    }
+
+    .modal-header {
+        padding: 14px 16px;
+        border-radius: var(--radius-md) var(--radius-md) 0 0;
+    }
+
+    .modal-body {
+        padding: 14px 16px;
+    }
+
+    .modal-footer {
+        padding: 12px 16px;
+        flex-direction: column;
+    }
+
+    .btn-cancel,
+    .btn-save {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
