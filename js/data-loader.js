@@ -29,7 +29,7 @@ function cargarDatosDesdeGitHub() {
 
             const selector = document.getElementById('selector-mes');
             if (selector) {
-                selector.innerHTML = '<option value="">-- Seleccionar mes --</option>';
+                selector.innerHTML = '<option >-- Seleccionar mes --</option>';
                 meses.forEach(mes => {
                     const opt = document.createElement('option');
                     opt.value = mes;
