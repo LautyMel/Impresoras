@@ -28,17 +28,33 @@ function cargarDatosDesdeGitHub() {
             }
 
             const selector = document.getElementById('selector-mes');
-            if (selector) {
-                selector.innerHTML = '<option >-- Seleccionar mes --</option>';
-                meses.forEach(mes => {
-                    const opt = document.createElement('option');
-                    opt.value = mes;
-                    opt.innerText = traducirMes(mes);
-                    selector.appendChild(opt);
-                });
-            }
 
-            renderizarTabla();
+            if (selector) {
+
+                // Limpiar el selector
+                selector.innerHTML = "";
+
+                // Agregar todos los meses
+                meses.forEach(mes => {
+
+                    const opt = document.createElement("option");
+
+                    opt.value = mes;
+                    opt.textContent = traducirMes(mes);
+
+                    selector.appendChild(opt);
+
+                });
+
+                // Seleccionar automáticamente el mes más reciente
+                if (meses.length > 0) {
+                    selector.value = meses[0];
+                }
+
+                // Dibujar la tabla
+                renderizarTabla();
+
+            }
         })
         .catch(err => {
             console.error(err);
