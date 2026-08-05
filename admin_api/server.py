@@ -26,13 +26,18 @@ class APIHandler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def _set_cors_headers(self):
-        self.send_header("Access-Control-Allow-Origin", "*")
+        # Reflejar el Origin remitente cuando venga (más compatible con el
+        # CORS + Private Network Access de Chrome). Si no viene, se permite
+        # cualquier origen (útil en desarrollo local).
+        origin = self.headers.get("Origin", "")
+        self.send_header("Access-Control-Allow-Origin", origin or "*")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
-        # Permite que una página servida desde GitHub Pages (https://lautymel.github.io)
-        # acceda a la API local (http://localhost:8001). Sin este header, Chrome
-        # bloquea la petición por la política Private Network Access (PNA).
+        # Chrome EXIGE este header en la respuesta a la preflight para permitir
+        # que una página HTTPS pública (GitHub Pages) acceda a http://localhost:8001.
+        # Sin esto, bloquea con: "Permission was denied ... loopback address space".
         self.send_header("Access-Control-Allow-Private-Network", "true")
+        self.send_header("Vary", "Origin")
 
     # ==================== GET ====================
 
