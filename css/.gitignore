@@ -1,0 +1,24 @@
+# Secretos y configuración sensible
+secretos.json
+
+
+# Entorno virtual de Python
+venv/
+.env/
+
+# Cache de Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# IDE y editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Sistema
+Thumbs.db
+.DS_Store
+
