@@ -25,6 +25,15 @@ class APIHandler(BaseHTTPRequestHandler):
         self._set_cors_headers()
         self.end_headers()
 
+    def _set_cors_headers(self):
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        # Permite que una página servida desde GitHub Pages (https://lautymel.github.io)
+        # acceda a la API local (http://localhost:8001). Sin este header, Chrome
+        # bloquea la petición por la política Private Network Access (PNA).
+        self.send_header("Access-Control-Allow-Private-Network", "true")
+
     # ==================== GET ====================
 
     def do_GET(self):
@@ -145,11 +154,6 @@ class APIHandler(BaseHTTPRequestHandler):
         except json.JSONDecodeError:
             self._responder_error(400, "JSON inválido")
             return None
-
-    def _set_cors_headers(self):
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
 
     def _responder_json(self, codigo, datos):
         self.send_response(codigo)

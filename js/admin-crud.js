@@ -5,7 +5,9 @@
  * Dependencias: admin-ui.js (cerrarModalAdmin), config.js (DATOS_PROTEGIDOS_HEX), data-loader.js (cargarDatosDesdeGitHub)
  */
 
-const API_BASE = "http://localhost:8001";
+// API_BASE se define en admin-login.js (se carga antes en index.html).
+// NO redeclarar aquí para evitar el error:
+// "Identifier 'API_BASE' has already been declared"
 
 // ==================== FILAS ====================
 
