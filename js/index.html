@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EMUI - Monitoreo de Impresoras</title>
+
+    <!-- ===== MÓDULOS CSS (orden de carga estricto) ===== -->
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/header.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/cards.css">
+    <link rel="stylesheet" href="css/toolbar.css">
+    <link rel="stylesheet" href="css/table.css">
+    <link rel="stylesheet" href="css/badges.css">
+    <link rel="stylesheet" href="css/toner.css">
+    <link rel="stylesheet" href="css/legend.css">
+    <link rel="stylesheet" href="css/footer.css">
+    <link rel="stylesheet" href="css/modal.css">
+    <link rel="stylesheet" href="css/responsive.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    <!-- Módulos JavaScript (orden de carga estricto) -->
+    <script src="js/config.js"></script>
+    <script src="js/crypto.js"></script>
+    <script src="js/data-loader.js"></script>
+    <script src="js/ui.js"></script>
+<script src="js/excel-export.js"></script>
+    <script src="js/admin-ui.js"></script>
+    <script src="js/admin-login.js"></script>
+    <script src="js/admin-crud.js"></script>
+    <script src="js/main.js"></script>
+</head>
+<body>
+
+    <!-- ===== HEADER ===== -->
+    <header class="site-header">
+        <div class="header-left">
+            <img src="imagenes/images logo.png" alt="Logo Buenos Aires" class="logo-ba">
+        </div>
+        <div class="header-center">
+            <h1 class="site-title">Monitoreo de Impresoras</h1>
+        </div>
+    </header>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="container">
+
+        <!-- Última actualización -->
+        <div class="update-bar">
+            <span class="status-dot"></span>
+            <span id="actualizacion">Cargando datos desde GitHub...</span>
+            <button class="btn btn-refresh" onclick="cargarDatosDesdeGitHub()" title="Actualizar datos">⟳</button>
+        </div>
+
+<!-- ===== TARJETAS DE RESUMEN ===== -->
+        <section class="cards-grid" id="cards-resumen">
+            <div class="card card-total">
+                <div class="card-icon">🖨️</div>
+                <div class="card-info">
+                    <span class="card-label">Total Impresoras</span>
+                    <span class="card-value" id="total-impresoras">—</span>
+                </div>
+            </div>
+            <div class="card card-online">
+                <div class="card-icon">✅</div>
+                <div class="card-info">
+                    <span class="card-label">En Línea</span>
+                    <span class="card-value" id="total-online">—</span>
+                </div>
+            </div>
+            <div class="card card-offline">
+                <div class="card-icon">❌</div>
+                <div class="card-info">
+                    <span class="card-label">Fuera de Línea</span>
+                    <span class="card-value" id="total-offline">—</span>
+                </div>
+            </div>
+            <div class="card card-alert">
+                <div class="card-icon">🔴</div>
+                <div class="card-info">
+                    <span class="card-label">Tóner Crítico (<5%)</span>
+                    <span class="card-value" id="total-critico">—</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== BARRA DE HERRAMIENTAS ===== -->
+        <div class="toolbar">
+            <div class="toolbar-left">
+                <label for="selector-mes">📅 Mes:</label>
+                <select id="selector-mes" onchange="renderizarTabla()"></select>
+            </div>
+<div class="toolbar-right">
+                <button class="btn btn-excel" onclick="descargarExcelMensual()">📊 Descargar Excel</button>
+                <button class="btn btn-admin" onclick="abrirModalAdmin()">⚙️ Admin</button>
+            </div>
+        </div>
+
+        <!-- ===== TABLA DE IMPRESORAS ===== -->
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Impresora</th>
+                        <th>Dirección IP</th>
+                        <th>Hojas del Mes</th>
+                        <th>Tóner</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-cuerpo">
+                    <tr>
+                        <td colspan="5" class="td-loading">Buscando registros en GitHub...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ===== LEYENDA ===== -->
+        <div class="legend">
+            <span class="legend-item"><span class="legend-dot dot-alto"></span> Tóner Alto (≥50%)</span>
+            <span class="legend-item"><span class="legend-dot dot-medio"></span> Tóner Medio (20%-49%)</span>
+            <span class="legend-item"><span class="legend-dot dot-bajo"></span> Tóner Bajo (<20%)</span>
+            <span class="legend-item"><span class="legend-dot dot-error"></span> Sin Datos / Error</span>
+        </div>
+
+    </main>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-left">
+                <img src="imagenes/logo footer.png" alt="BA" class="footer-logo">
+                
+            </div>
+            <div class="footer-center">
+                <span>EMUI &mdash; Ente de Mantenimiento Urbano Integral</span>
+                <span class="footer-version">Sistema de Monitoreo v2.0</span>
+            </div>
+<div class="footer-right">
+                <span class="footer-dato">Datos actualizados cada 10 minutos</span>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
