@@ -1,0 +1,83 @@
+/* =============================================
+   10. TONER BARS
+   ============================================= */
+.toner-bar-container {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 96px;
+    margin: 2px 6px 2px 0;
+    background: transparent;
+}
+
+.toner-bar-fill {
+    flex: 0 0 auto;
+    height: 9px;
+    border-radius: 10px;
+    min-width: 6px;
+    max-width: 65px;
+    transition: width var(--ease-slow), opacity var(--ease);
+    position: relative;
+    overflow: hidden;
+}
+
+.toner-bar-fill::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(255,255,255,0.2), transparent 60%);
+    border-radius: 10px;
+}
+
+.toner-bar-fill.barra-alto {
+    background: linear-gradient(90deg, #2ecc71, var(--green));
+}
+
+.toner-bar-fill.barra-medio {
+    background: linear-gradient(90deg, var(--orange), var(--orange-dark));
+}
+
+.toner-bar-fill.barra-bajo {
+    background: linear-gradient(90deg, var(--red), var(--red-dark));
+}
+
+.toner-bar-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--gray-700);
+    white-space: nowrap;
+    min-width: 36px;
+    font-variant-numeric: tabular-nums;
+}
+
+.bloque-toners {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2px 6px;
+    align-items: center;
+}
+
+.toner-bar-container {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    background: transparent;
+}
+
+/* Toner text badges (fallback) */
+.toner-alto {
+    color: var(--green);
+    font-weight: 700;
+}
+
+.toner-medio {
+    color: var(--orange);
+    font-weight: 700;
+}
+
+.toner-bajo {
+    color: var(--red);
+    font-weight: 700;
+}
+
