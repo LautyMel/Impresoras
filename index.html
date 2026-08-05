@@ -27,7 +27,10 @@
     <script src="js/crypto.js"></script>
     <script src="js/data-loader.js"></script>
     <script src="js/ui.js"></script>
-    <script src="js/excel-export.js"></script>
+<script src="js/excel-export.js"></script>
+    <script src="js/admin-ui.js"></script>
+    <script src="js/admin-login.js"></script>
+    <script src="js/admin-crud.js"></script>
     <script src="js/main.js"></script>
 </head>
 <body>
@@ -52,7 +55,7 @@
             <button class="btn btn-refresh" onclick="cargarDatosDesdeGitHub()" title="Actualizar datos">⟳</button>
         </div>
 
-        <!-- ===== TARJETAS DE RESUMEN ===== -->
+<!-- ===== TARJETAS DE RESUMEN ===== -->
         <section class="cards-grid" id="cards-resumen">
             <div class="card card-total">
                 <div class="card-icon">🖨️</div>
@@ -90,9 +93,9 @@
                 <label for="selector-mes">📅 Mes:</label>
                 <select id="selector-mes" onchange="renderizarTabla()"></select>
             </div>
-            <div class="toolbar-right">
+<div class="toolbar-right">
                 <button class="btn btn-excel" onclick="descargarExcelMensual()">📊 Descargar Excel</button>
-              
+                <button class="btn btn-admin" onclick="abrirModalAdmin()">⚙️ Admin</button>
             </div>
         </div>
 
@@ -137,7 +140,7 @@
                 <span>EMUI &mdash; Ente de Mantenimiento Urbano Integral</span>
                 <span class="footer-version">Sistema de Monitoreo v2.0</span>
             </div>
-            <div class="footer-right">
+<div class="footer-right">
                 <span class="footer-dato">Datos actualizados cada 10 minutos</span>
             </div>
         </div>
@@ -145,4 +148,3 @@
 
 </body>
 </html>
-
