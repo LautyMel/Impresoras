@@ -49,11 +49,6 @@
                 "ip": "10.209.87.142",
                 "Contador General": 658,
                 "Porcentaje Tóner Negro": "66%"
-            },
-            "impresora 10": {
-                "ip": "10.209.87.143",
-                "Contador General": 0,
-                "Porcentaje Tóner Negro": "N/A"
             }
         }
     },
@@ -107,11 +102,6 @@
                 "ip": "10.209.87.142",
                 "Contador General": 979,
                 "Porcentaje Tóner Negro": "60%"
-            },
-            "impresora 10": {
-                "ip": "10.209.87.143",
-                "Contador General": 0,
-                "Porcentaje Tóner Negro": "N/A"
             }
         }
     },
@@ -165,11 +155,6 @@
                 "ip": "10.209.87.142",
                 "Contador General": 1250,
                 "Porcentaje Tóner Negro": "54%"
-            },
-            "impresora 10": {
-                "ip": "10.209.87.143",
-                "Contador General": 0,
-                "Porcentaje Tóner Negro": "N/A"
             }
         }
     },
@@ -223,11 +208,6 @@
                 "ip": "10.209.87.142",
                 "Contador General": 1261,
                 "Porcentaje Tóner Negro": "54%"
-            },
-            "impresora 10": {
-                "ip": "10.209.87.143",
-                "Contador General": 0,
-                "Porcentaje Tóner Negro": "N/A"
             }
         }
     }
