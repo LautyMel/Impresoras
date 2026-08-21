@@ -159,22 +159,22 @@
         }
     },
     "2026-08": {
-        "ultima_actualizacion": "2026-08-20 15:48:07",
+        "ultima_actualizacion": "2026-08-21 08:40:29",
         "datos": {
             "Impresora 1": {
                 "ip": "10.25.5.19",
-                "Contador General": 4240,
+                "Contador General": 4263,
                 "Porcentaje Tóner Negro": "100%"
             },
             "Impresora 2": {
                 "ip": "10.25.5.20",
-                "Contador General": 8139,
+                "Contador General": 8140,
                 "Porcentaje Tóner Negro": "66%"
             },
             "Impresora 3": {
                 "ip": "10.25.5.21",
-                "Contador General": 2969,
-                "Porcentaje Tóner Negro": "4%"
+                "Contador General": 2971,
+                "Porcentaje Tóner Negro": "3%"
             },
             "Impresora 4": {
                 "ip": "10.25.5.22",
@@ -183,25 +183,25 @@
             },
             "Impresora 5": {
                 "ip": "10.25.5.23",
-                "Contador General": 3544,
+                "Contador General": 3547,
                 "Porcentaje Tóner Negro": "100%"
             },
             "Impresora 6": {
                 "ip": "10.25.5.24",
-                "Contador General": 906,
+                "Contador General": 925,
                 "Porcentaje Tóner Negro": "69%",
-                "Porcentaje Tóner Cian": "86%",
+                "Porcentaje Tóner Cian": "85%",
                 "Porcentaje Tóner Magenta": "89%",
                 "Porcentaje Tóner Amarillo": "85%"
             },
             "Impresora 7": {
                 "ip": "10.209.34.69",
-                "Contador General": 1429,
+                "Contador General": 1431,
                 "Porcentaje Tóner Negro": "48%"
             },
             "Impresora 8": {
                 "ip": "10.209.87.29",
-                "Contador General": 1676,
+                "Contador General": 1678,
                 "Porcentaje Tóner Negro": "27%"
             },
             "Impresora 9": {
