@@ -212,7 +212,7 @@
         }
     },
     "2026-09": {
-        "ultima_actualizacion": "2026-09-02 14:57:14",
+        "ultima_actualizacion": "2026-09-02 15:07:28",
         "datos": {
             "Impresora 1": {
                 "ip": "10.25.5.19",
@@ -221,7 +221,7 @@
             },
             "Impresora 2": {
                 "ip": "10.25.5.20",
-                "Contador General": 9205,
+                "Contador General": 9214,
                 "Porcentaje Tóner Negro": "58%"
             },
             "Impresora 3": {
