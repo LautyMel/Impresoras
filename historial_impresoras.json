@@ -212,21 +212,21 @@
         }
     },
     "2026-09": {
-        "ultima_actualizacion": "2026-09-22 15:34:07",
+        "ultima_actualizacion": "2026-09-22 23:31:29",
         "datos": {
             "Impresora 1": {
                 "ip": "10.25.5.19",
-                "Contador General": 5774,
+                "Contador General": 5775,
                 "Porcentaje Tóner Negro": "100%"
             },
             "Impresora 2": {
                 "ip": "10.25.5.20",
-                "Contador General": 10733,
+                "Contador General": 10736,
                 "Porcentaje Tóner Negro": "49%"
             },
             "Impresora 3": {
                 "ip": "10.25.5.21",
-                "Contador General": 4149,
+                "Contador General": 4150,
                 "Porcentaje Tóner Negro": "100%"
             },
             "Impresora 4": {
@@ -236,31 +236,31 @@
             },
             "Impresora 5": {
                 "ip": "10.25.5.23",
-                "Contador General": 5243,
+                "Contador General": 5245,
                 "Porcentaje Tóner Negro": "89%"
             },
             "Impresora 6": {
                 "ip": "10.25.5.24",
-                "Contador General": 1061,
-                "Porcentaje Tóner Negro": "64%",
+                "Contador General": 1069,
+                "Porcentaje Tóner Negro": "63%",
                 "Porcentaje Tóner Cian": "82%",
                 "Porcentaje Tóner Magenta": "87%",
-                "Porcentaje Tóner Amarillo": "82%"
+                "Porcentaje Tóner Amarillo": "81%"
             },
             "Impresora 7": {
                 "ip": "10.209.34.69",
-                "Contador General": 1997,
-                "Porcentaje Tóner Negro": "33%"
+                "Contador General": 2022,
+                "Porcentaje Tóner Negro": "32%"
             },
             "Impresora 8": {
                 "ip": "10.209.87.29",
-                "Contador General": 2040,
-                "Porcentaje Tóner Negro": "18%"
+                "Contador General": 2090,
+                "Porcentaje Tóner Negro": "16%"
             },
             "Impresora 9": {
                 "ip": "10.209.87.142",
-                "Contador General": 1511,
-                "Porcentaje Tóner Negro": "45%"
+                "Contador General": 1514,
+                "Porcentaje Tóner Negro": "44%"
             }
         }
     }
