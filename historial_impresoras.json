@@ -212,7 +212,7 @@
         }
     },
     "2026-09": {
-        "ultima_actualizacion": "2026-09-24 09:23:37",
+        "ultima_actualizacion": "2026-09-24 09:33:53",
         "datos": {
             "Impresora 1": {
                 "ip": "10.25.5.19",
@@ -221,7 +221,7 @@
             },
             "Impresora 2": {
                 "ip": "10.25.5.20",
-                "Contador General": 10971,
+                "Contador General": 10992,
                 "Porcentaje Tóner Negro": "47%"
             },
             "Impresora 3": {
@@ -231,12 +231,12 @@
             },
             "Impresora 4": {
                 "ip": "10.25.5.22",
-                "Contador General": 3059,
+                "Contador General": 3064,
                 "Porcentaje Tóner Negro": "100%"
             },
             "Impresora 5": {
                 "ip": "10.25.5.23",
-                "Contador General": 5270,
+                "Contador General": 5275,
                 "Porcentaje Tóner Negro": "89%"
             },
             "Impresora 6": {
